@@ -49,7 +49,7 @@ public class OutputFrameController {
     private int playerXScore;
     private int playerOScore;
     private int roundsLeft;
-    private boolean isBotFirst;
+    private PlayerMarks firstPlayer;
     private Bot bot;
 
 
@@ -66,20 +66,20 @@ public class OutputFrameController {
      * @param name1 Name of Player 1 (Player).
      * @param name2 Name of Player 2 (Bot).
      * @param rounds The number of rounds chosen to be played.
-     * @param isBotFirst True if bot is first, false otherwise.
+     * @param firstPlayer X if Player 1 (X) is first, O if Player 2 (O) is first.
      *
      */
-    void getInput(String name1, String name2, String rounds, boolean isBotFirst){
+    void getInput(String name1, String name2, String rounds, PlayerMarks firstPlayer){
         this.playerXName.setText(name1);
         this.playerOName.setText(name2);
         this.roundsLeftLabel.setText(rounds);
         this.roundsLeft = Integer.parseInt(rounds);
-        this.isBotFirst = isBotFirst;
+        this.firstPlayer = firstPlayer;
 
         // Start bot
         this.bot = new Bot();
-        this.playerXTurn = !isBotFirst;
-        if (this.isBotFirst) {
+        this.playerXTurn = (firstPlayer==PlayerMarks.X);
+        if (this.firstPlayer == PlayerMarks.O) {
             this.moveBot();
         }
     }
@@ -187,12 +187,12 @@ public class OutputFrameController {
                 this.updateGameBoard(i, j);
                 this.playerXTurn = false;         // Alternate player's turn.
 
-                if (isBotFirst) {
+                if (firstPlayer == PlayerMarks.O) {
                     this.roundsLeft--; // Decrement the number of rounds left after both Player X & Player O have played.
                     this.roundsLeftLabel.setText(String.valueOf(this.roundsLeft));
                 }
 
-                if (isBotFirst && this.roundsLeft == 0) {
+                if (firstPlayer == PlayerMarks.O && this.roundsLeft == 0) {
                     this.endOfGame();
                 }
 
@@ -208,12 +208,12 @@ public class OutputFrameController {
                 this.updateGameBoard(i, j);
                 this.playerXTurn = true;
 
-                if (!isBotFirst) {
+                if (firstPlayer == PlayerMarks.X) {
                     this.roundsLeft--; // Decrement the number of rounds left after both Player X & Player O have played.
                     this.roundsLeftLabel.setText(String.valueOf(this.roundsLeft));
                 }
 
-                if (!isBotFirst && this.roundsLeft == 0) { // Game has terminated.
+                if (firstPlayer == PlayerMarks.X && this.roundsLeft == 0) { // Game has terminated.
                     this.endOfGame();       // Determine & announce the winner.
                 }
             }
