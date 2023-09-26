@@ -24,8 +24,12 @@ public class InputFrameController{
 
     public CheckBox isBotFirst;
     @FXML
+    private ComboBox<String> player1Type;
+    @FXML
     private TextField player1;
 
+    @FXML
+    private ComboBox<String> player2Type;
     @FXML
     private TextField player2;
 
@@ -45,6 +49,18 @@ public class InputFrameController{
                 "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28");
         this.numberOfRounds.setItems(numberOfRoundsDropdown);
         this.numberOfRounds.getSelectionModel().select(0);
+
+        ObservableList<String> player1TypeDropdown = FXCollections.observableArrayList(
+                "Human", "Minimax Bot", "Local Search Bot", "Genetic Algorithm Bot"
+        );
+        this.player1Type.setItems(player1TypeDropdown);
+        this.player1Type.getSelectionModel().select(0);
+
+        ObservableList<String> player2TypeDropdown = FXCollections.observableArrayList(
+                "Human", "Minimax Bot", "Local Search Bot", "Genetic Algorithm Bot"
+        );
+        this.player2Type.setItems(player2TypeDropdown);
+        this.player2Type.getSelectionModel().select(0);
     }
 
 
@@ -58,6 +74,8 @@ public class InputFrameController{
         this.player1.setText("");
         this.player2.setText("");
         this.numberOfRounds.getSelectionModel().select(0);
+        this.player1Type.getSelectionModel().select(0);
+        this.player2Type.getSelectionModel().select(0);
     }
 
 
