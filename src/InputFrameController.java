@@ -2,12 +2,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckBox;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 
-import javafx.scene.control.Alert;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -22,7 +19,9 @@ import java.io.IOException;
  */
 public class InputFrameController{
 
-    public CheckBox isBotFirst;
+    //public CheckBox isBotFirst;
+    @FXML
+    public ComboBox<String> firstPlayer;
     @FXML
     private ComboBox<String> player1Type;
     @FXML
@@ -50,17 +49,19 @@ public class InputFrameController{
         this.numberOfRounds.setItems(numberOfRoundsDropdown);
         this.numberOfRounds.getSelectionModel().select(0);
 
-        ObservableList<String> player1TypeDropdown = FXCollections.observableArrayList(
-                "Human", "Minimax Bot", "Local Search Bot", "Genetic Algorithm Bot"
-        );
+        ObservableList<String> player1TypeDropdown = FXCollections.observableArrayList(BotProvider.getBotKeys());
         this.player1Type.setItems(player1TypeDropdown);
         this.player1Type.getSelectionModel().select(0);
 
-        ObservableList<String> player2TypeDropdown = FXCollections.observableArrayList(
-                "Human", "Minimax Bot", "Local Search Bot", "Genetic Algorithm Bot"
-        );
+        ObservableList<String> player2TypeDropdown = FXCollections.observableArrayList(BotProvider.getBotKeys());
         this.player2Type.setItems(player2TypeDropdown);
         this.player2Type.getSelectionModel().select(0);
+
+        ObservableList<String> firstPlayerOptions = FXCollections.observableArrayList(
+                "Player 1 (X)", "Player 2 (O)"
+        );
+        this.firstPlayer.setItems(firstPlayerOptions);
+        this.firstPlayer.getSelectionModel().select(0);
     }
 
 
@@ -98,7 +99,15 @@ public class InputFrameController{
 
             // Get controller of output frame and pass input including player names and number of rounds chosen.
             OutputFrameController outputFC = loader.getController();
-            outputFC.getInput(this.player1.getText(), this.player2.getText(), this.numberOfRounds.getValue(), this.isBotFirst.isSelected());
+            outputFC.getInput(
+                    this.player1.getText(),
+                    this.player2.getText(),
+                    this.numberOfRounds.getValue(),
+                    this.player1Type.getValue(),
+                    this.player2Type.getValue(),
+                    (this.firstPlayer.getValue().equals("Player 1 (X)"))
+                            ? PlayerMarks.X
+                            : PlayerMarks.O);
 
             // Open the new frame.
             Stage secondaryStage = new Stage();

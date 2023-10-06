@@ -12,10 +12,10 @@
             prefWidth="800"
             prefHeight="500">
     <center>
-        <GridPane fx:id="gameBoard" />
+        <GridPane fx:id="gameBoardPane" />
     </center>
     <right>
-        <GridPane fx:id="scoreBoard">
+        <GridPane fx:id="scoreBoardPane">
             <padding><Insets left="10" right="10"/></padding>
 
             <HBox alignment="CENTER" GridPane.rowIndex="1" GridPane.columnIndex="0">
