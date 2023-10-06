@@ -1,3 +1,4 @@
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -184,14 +185,20 @@ public class OutputFrameController {
      *
      */
     private void callMoveNextBot(){
-        // Give the turn to the opponent
-        switch(this.currentBoard.getCurrentPlayer()){
-            case X -> {
-                if(this.botX != null)this.moveBot(this.botX);
-            }
-            case O -> {
-                if(this.botO != null)this.moveBot(this.botO);
-            }
+        // Get the bot to play this turn
+        Bot toPlay = switch(this.currentBoard.getCurrentPlayer()){
+            case X -> this.botX;
+            case O -> this.botO;
+            case EMPTY -> throw new RuntimeException();
+        };
+
+        if(toPlay != null){
+            // Send a message to the bot to make a move for this turn
+            this.setButtonEnabled(false);
+            this.moveBot(toPlay);
+        }else{
+            // This is a human player: enable game board buttons
+            this.setButtonEnabled(true);
         }
     }
 
@@ -250,9 +257,7 @@ public class OutputFrameController {
         }
 
         // Disable the game board buttons to prevent from playing further.
-        for (int i = 0; i < ROW; i++)
-            for (int j = 0; j < COL; j++)
-                this.buttons[i][j].setDisable(true);
+        this.setButtonEnabled(false);
     }
 
 
@@ -287,15 +292,51 @@ public class OutputFrameController {
     }
 
     private void moveBot(Bot bot) {
-        int[] botMove = bot.move(this.currentBoard);
-        int i = botMove[0];
-        int j = botMove[1];
+        BotMoveTask moveTask = new BotMoveTask(bot, this.currentBoard);
 
-        try {
-            this.selectedCoordinates(i, j);
-        }catch(IllegalStateException e){
-            new Alert(Alert.AlertType.ERROR, "Bot Invalid Coordinates. Exiting.").showAndWait();
+        // If the move task succeeds, play the move on the board
+        moveTask.setOnSucceeded(event -> {
+            int[] botMove = moveTask.getValue();
+            int i = botMove[0];
+            int j = botMove[1];
+
+            try {
+                this.selectedCoordinates(i, j);
+            }catch(IllegalStateException e){
+                new Alert(Alert.AlertType.ERROR, "Bot Invalid Coordinates. Exiting.").showAndWait();
+                System.exit(1);
+            }
+        });
+
+        // If the move task fails, stop the program immediately
+        moveTask.setOnFailed(event -> {
+            Throwable e = moveTask.getException();
+            e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR, String.format("A fatal error has occured: %n%s%n%n Exiting.", e.getMessage())).showAndWait();
             System.exit(1);
+        });
+
+        new Thread(moveTask).start();
+    }
+
+    private void setButtonEnabled(boolean b){
+        for(int i = 0; i < ROW; i++)
+            for(int j = 0; j < COL; j++)
+                this.buttons[i][j].setDisable(!b);
+    }
+
+    private static class BotMoveTask extends Task<int[]>{
+        private final Bot bot;
+        private final Board board;
+
+        public BotMoveTask(Bot bot, Board board){
+            this.bot = bot;
+            this.board = board;
+        }
+
+        @Override
+        public int[] call(){
+            return this.bot.move(this.board);
         }
     }
 }
