@@ -1,5 +1,5 @@
-## WaduhAI
+# WaduhAI
 
-<kbd>
-  <img src="https://i.ytimg.com/vi/3syn764PeHQ/sddefault.jpg">
-</kbd>
+[![Waduh☝😅](https://img.youtube.com/vi/q7VoelZ3Svo/mqdefault.jpg)](https://www.youtube.com/shorts/q7VoelZ3Svo)
+
+_Waduh☝😅_
