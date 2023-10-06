@@ -8,23 +8,26 @@ public class Board {
     private PlayerMarks currentPlayer;
     private int playerXScore;
     private int playerOScore;
-    private int roundsLeft;
+    private int pliesLeft;
 
     /**
      * Menginisialisasi sebuah papan baru.
      * @param row Banyak baris pada papan.
      * @param col Banyak kolom pada papan.
      * @param currentPlayer Pemain yang memegang giliran sekarang pada permainan.
-     * @param roundsLeft Banyak ronde yang tersisa.
-     * @throws IllegalArgumentException Jika {@code row}, {@code col}, atau {@code roundsLeft} tidak bernilai positif,
+     * @param pliesLeft Banyak ronde yang tersisa.
+     * @throws IllegalArgumentException Jika {@code row}, {@code col}, atau {@code pliesLeft} tidak bernilai positif,
      * atau jika {@code currentPlayer} bukan pemain valid.
      */
-    public Board(int row, int col, PlayerMarks currentPlayer, int roundsLeft){
-        if(row <= 0 || col <= 0|| currentPlayer == PlayerMarks.EMPTY || roundsLeft <= 0)throw new IllegalArgumentException();
+    public Board(int row, int col, PlayerMarks currentPlayer, int pliesLeft){
+        if(row <= 0 || col <= 0)throw new IllegalArgumentException("Size must be at least 1x1");
+        if(currentPlayer == PlayerMarks.EMPTY)throw new IllegalArgumentException("Current player cannot be empty");
+        if(pliesLeft <= 0)throw new IllegalArgumentException("Number of plies left must be positive");
 
         this.row = row;
         this.col = col;
         this.currentPlayer = currentPlayer;
+        this.pliesLeft = pliesLeft;
 
         this.state = new PlayerMarks[row][col];
         for(int i = 0; i < row; i++){
@@ -38,7 +41,7 @@ public class Board {
      * @throws NullPointerException Jika {@code other} bernilai {@code null}.
      */
     public Board(Board other){
-        this(other.row, other.col, other.currentPlayer, other.roundsLeft);
+        this(other.row, other.col, other.currentPlayer, other.pliesLeft);
         if(other == null)throw new NullPointerException();
 
         for(int i = 0; i < row; i++){
@@ -70,7 +73,7 @@ public class Board {
      * @return true if roundsLeft = 0, false if otherwise
      */
     public Boolean isTerminal(){
-        return (this.roundsLeft == 0);
+        return this.pliesLeft == 0 || this.getEmptySquares().isEmpty();
     }
 
     /**
@@ -83,12 +86,17 @@ public class Board {
         return 0;
     }
 
-    /**
-     * Mengembalikan pemain yang memegang giliran sekarang.
-     * @return Pemain yang memegang giliran sekarang, diwakili dengan markahnya.
-     */
-    public PlayerMarks getCurrentPlayer(){
+    public PlayerMarks getCurrentPlayer() {
         return this.currentPlayer;
+    }
+    public int getPlayerXScore(){
+        return this.playerXScore;
+    }
+    public int getPlayerOScore(){
+        return this.playerOScore;
+    }
+    public int getPliesLeft(){
+        return this.pliesLeft;
     }
 
     /**
@@ -115,18 +123,58 @@ public class Board {
             Remove setAt() as a public method completely?
             Move board state initialization to constructor?
          */
-        if(mark == PlayerMarks.EMPTY)throw new IllegalArgumentException();
-        if(this.state[row][col] != PlayerMarks.EMPTY)throw new IllegalStateException();
-        this.state[row][col] = mark;
+        if(mark == PlayerMarks.EMPTY)throw new IllegalArgumentException("Mark is empty");
+        if(this.state[row][col] != PlayerMarks.EMPTY)throw new IllegalStateException("Target square is not empty");
+        this.setMark(row, col, mark);
     }
 
     /**
      * Melakukan aksi pada koordinat yang diberikan untuk pemain yang memegang giliran.
      * @param row Baris dari koordinat yang diberikan.
      * @param col Kolom dari koordinat yang diberikan.
+     * @throws IllegalStateException Jika kotak yang dituju sudah terisi markah.
      */
     public void act(int row, int col){
-        // TODO: Implement board act
-        throw new UnsupportedOperationException();
+        PlayerMarks mark = this.currentPlayer;
+
+        // Will throw if (row, col) is not empty
+        this.setAt(row, col, mark);
+
+        if(row > 0)this.setMark(row - 1, col, mark, true);
+        if(col > 0)this.setMark(row, col - 1, mark, true);
+        if(row < this.row - 1)this.setMark(row + 1, col, mark, true);
+        if(col < this.col - 1)this.setMark(row, col + 1, mark, true);
+
+        // Pass turn to opponent and conclude round
+        this.switchTurn();
+        this.pliesLeft--;
+    }
+
+    private void setMark(int row, int col, PlayerMarks mark){
+        this.setMark(row, col, mark, false);
+    }
+
+    private void setMark(int row, int col, PlayerMarks mark, boolean skipEmpty){
+        PlayerMarks oldMark = this.state[row][col];
+        if(skipEmpty && oldMark == PlayerMarks.EMPTY)return;
+
+        this.state[row][col] = mark;
+
+        switch(oldMark){
+            case X -> this.playerXScore--;
+            case O -> this.playerOScore--;
+        }
+        switch(mark){
+            case X -> this.playerXScore++;
+            case O -> this.playerOScore++;
+        }
+    }
+
+    private void switchTurn(){
+        this.currentPlayer = switch(this.currentPlayer){
+            case X -> PlayerMarks.O;
+            case O -> PlayerMarks.X;
+            case EMPTY -> throw new RuntimeException();
+        };
     }
 }

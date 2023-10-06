@@ -49,15 +49,11 @@ public class InputFrameController{
         this.numberOfRounds.setItems(numberOfRoundsDropdown);
         this.numberOfRounds.getSelectionModel().select(0);
 
-        ObservableList<String> player1TypeDropdown = FXCollections.observableArrayList(
-                "Human", "Minimax Bot", "Local Search Bot", "Genetic Algorithm Bot"
-        );
+        ObservableList<String> player1TypeDropdown = FXCollections.observableArrayList(BotProvider.getBotKeys());
         this.player1Type.setItems(player1TypeDropdown);
         this.player1Type.getSelectionModel().select(0);
 
-        ObservableList<String> player2TypeDropdown = FXCollections.observableArrayList(
-                "Human", "Minimax Bot", "Local Search Bot", "Genetic Algorithm Bot"
-        );
+        ObservableList<String> player2TypeDropdown = FXCollections.observableArrayList(BotProvider.getBotKeys());
         this.player2Type.setItems(player2TypeDropdown);
         this.player2Type.getSelectionModel().select(0);
 
@@ -107,6 +103,8 @@ public class InputFrameController{
                     this.player1.getText(),
                     this.player2.getText(),
                     this.numberOfRounds.getValue(),
+                    this.player1Type.getValue(),
+                    this.player2Type.getValue(),
                     (this.firstPlayer.getValue().equals("Player 1 (X)"))
                             ? PlayerMarks.X
                             : PlayerMarks.O);
