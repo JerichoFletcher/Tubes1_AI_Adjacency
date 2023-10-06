@@ -57,6 +57,8 @@ public class OutputFrameController {
     private static final int COL = 8;
     private Button[][] buttons = new Button[ROW][COL];
 
+    private Board currentBoard;
+
 
     /**
      * Set the name of player X (player) to be name1, set the name of player O (bot) to be name2,
@@ -75,6 +77,17 @@ public class OutputFrameController {
         this.roundsLeftLabel.setText(rounds);
         this.roundsLeft = Integer.parseInt(rounds);
         this.firstPlayer = firstPlayer;
+
+        this.currentBoard = new Board(ROW, COL, this.firstPlayer, this.roundsLeft);
+        this.currentBoard.setAt(ROW - 2, 0, PlayerMarks.X);
+        this.currentBoard.setAt(ROW - 1, 0, PlayerMarks.X);
+        this.currentBoard.setAt(ROW - 2, 1, PlayerMarks.X);
+        this.currentBoard.setAt(ROW - 1, 1, PlayerMarks.X);
+        this.currentBoard.setAt(0, COL - 2, PlayerMarks.O);
+        this.currentBoard.setAt(0, COL - 1, PlayerMarks.O);
+        this.currentBoard.setAt(1, COL - 2, PlayerMarks.O);
+        this.currentBoard.setAt(1, COL - 1, PlayerMarks.O);
+        this.renderBoard();
 
         // Start bot
         this.bot = new Bot();
@@ -125,14 +138,14 @@ public class OutputFrameController {
         }
 
         // Setting up the initial game board with 4 X's in bottom left corner and 4 O's in top right corner.
-        this.buttons[ROW - 2][0].setText("X");
+        /*this.buttons[ROW - 2][0].setText("X");
         this.buttons[ROW - 1][0].setText("X");
         this.buttons[ROW - 2][1].setText("X");
         this.buttons[ROW - 1][1].setText("X");
         this.buttons[0][COL - 2].setText("O");
         this.buttons[0][COL - 1].setText("O");
         this.buttons[1][COL - 2].setText("O");
-        this.buttons[1][COL - 1].setText("O");
+        this.buttons[1][COL - 1].setText("O");*/
 
 
         // Construct score board with 8 rows.
@@ -159,6 +172,19 @@ public class OutputFrameController {
         this.playerXTurn = true;
         this.playerXScore = 4;
         this.playerOScore = 4;
+    }
+
+
+    /**
+     * Renders the game board contents to the window.
+     */
+    private void renderBoard(){
+        for(int i = 0; i < ROW; i++){
+            for(int j = 0; j < COL; j++){
+                PlayerMarks mark = this.currentBoard.getAt(i, j);
+                this.buttons[i][j].setText(mark.toString());
+            }
+        }
     }
 
 

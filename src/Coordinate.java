@@ -6,7 +6,7 @@ public class Coordinate {
     public static byte getY(byte coordinate){
         return (byte) (coordinate & 0xF);
     }
-    public static byte concat(byte x, byte y){
+    public static byte of(byte x, byte y){
         return (byte) (((x & 0xF) << 4) | (y & 0xF));
     }
 }
