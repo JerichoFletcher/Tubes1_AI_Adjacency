@@ -102,7 +102,7 @@ public class InputFrameController{
             outputFC.getInput(
                     this.player1.getText(),
                     this.player2.getText(),
-                    this.numberOfRounds.getValue(),
+                    Integer.parseInt(this.numberOfRounds.getValue()),
                     this.player1Type.getValue(),
                     this.player2Type.getValue(),
                     (this.firstPlayer.getValue().equals("Player 1 (X)"))
