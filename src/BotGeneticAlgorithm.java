@@ -92,6 +92,10 @@ public class BotGeneticAlgorithm extends BotBase {
         Tree<ReservationNode> reservationTree = new Tree<ReservationNode>(null);
         List<Individual> generation = generateNewGeneration(board);
         for (int i = 0; i < n; i++) {
+            if (isStopped()){
+                break;
+            }
+
             for (Individual individual : generation) {
                 reserve(reservationTree, individual);
             }
@@ -134,7 +138,7 @@ public class BotGeneticAlgorithm extends BotBase {
             generation = newGeneration;
         }
 
-        return reservationTree.getValue().action;
+        return reservationTree.getChild(reservationTree.getValue()).getValue().action;
     }
 
 }
