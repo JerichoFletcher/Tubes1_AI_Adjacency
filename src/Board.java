@@ -158,6 +158,16 @@ public class Board {
     /**
      * Melakukan aksi pada koordinat yang diberikan untuk pemain yang memegang giliran.
      *
+     * @param move Koordinat yang dipilih.
+     * @throws IllegalStateException Jika kotak yang dituju sudah terisi markah.
+     */
+    public void act(byte move) {
+        this.act(Coordinate.getX(move), Coordinate.getY(move));
+    }
+
+    /**
+     * Melakukan aksi pada koordinat yang diberikan untuk pemain yang memegang giliran.
+     *
      * @param row Baris dari koordinat yang diberikan.
      * @param col Kolom dari koordinat yang diberikan.
      * @throws IllegalStateException Jika kotak yang dituju sudah terisi markah.

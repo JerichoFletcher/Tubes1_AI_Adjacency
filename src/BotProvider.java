@@ -11,7 +11,7 @@ public class BotProvider {
             {"Human", null},
             {"Random (test)", BotRandom.class},
             {"Greedy (test)", BotGreedy.class},
-            {"Minimax Bot", BotBase.class},
+            {"Minimax Bot", BotMinimax.class},
             {"Local Search Bot", BotBase.class},
             {"Genetic Algorithm Bot", BotBase.class}
     }).collect(HashMap::new, (map, val) -> {
