@@ -4,17 +4,17 @@ import java.util.function.BooleanSupplier;
 public class Minimax {
     private static int leafCount = 0, pruneCount = 0;
 
-    public static byte startSearch(Board board, BooleanSupplier stopf, int maxDepth) {
-        SearchResult result = findOne(board, stopf, 1);
+    public static byte startSearch(Board board, BooleanSupplier stopF, int maxDepth) {
+        SearchResult result = findOne(board, stopF, 1);
         for (int depth = 2; depth <= maxDepth; depth++) {
-            if (stopf.getAsBoolean()) break;
-            SearchResult currentResult = findOne(board, stopf, depth);
+            if (stopF.getAsBoolean()) break;
+            SearchResult currentResult = findOne(board, stopF, depth);
             if (currentResult.evaluation > result.evaluation) result = currentResult;
         }
         return result.move;
     }
 
-    private static SearchResult findOne(Board board, BooleanSupplier stopf, int depth) {
+    private static SearchResult findOne(Board board, BooleanSupplier stopF, int depth) {
         System.out.printf("Starting search with depth %s\n", depth);
         leafCount = pruneCount = 0;
 
@@ -30,10 +30,10 @@ public class Minimax {
         int a = Integer.MIN_VALUE, b = Integer.MAX_VALUE;
 
         for (byte move : moves) {
-            if (stopf.getAsBoolean()) break;
+            if (stopF.getAsBoolean()) break;
             Board nextBoard = moveBoards.get(move);
 
-            int score = minValue(nextBoard, stopf, a, b, board.getCurrentPlayer(), depth - 1);
+            int score = minValue(nextBoard, stopF, a, b, board.getCurrentPlayer(), depth - 1);
             if (score > a) {
                 a = score;
                 maxResult.clear();
@@ -49,8 +49,8 @@ public class Minimax {
         return new SearchResult(maxResult.get((int) (Math.random() * maxResult.size())), a);
     }
 
-    private static int minValue(Board board, BooleanSupplier stopf, int a, int b, PlayerMarks searchingPlayer, int depth) {
-        if (stopf.getAsBoolean() || depth == 0 || board.isTerminal()) {
+    private static int minValue(Board board, BooleanSupplier stopF, int a, int b, PlayerMarks searchingPlayer, int depth) {
+        if (stopF.getAsBoolean() || depth == 0 || board.isTerminal()) {
             leafCount++;
             return switch (searchingPlayer) {
                 case X -> board.getPlayerXScore() - board.getPlayerOScore();
@@ -65,7 +65,7 @@ public class Minimax {
 
         int score = Integer.MAX_VALUE;
         for (byte move : moves) {
-            score = Math.min(score, maxValue(moveBoards.get(move), stopf, a, b, searchingPlayer, depth - 1));
+            score = Math.min(score, maxValue(moveBoards.get(move), stopF, a, b, searchingPlayer, depth - 1));
             if (score < a) {
                 pruneCount++;
                 return score;
@@ -75,8 +75,8 @@ public class Minimax {
         return score;
     }
 
-    private static int maxValue(Board board, BooleanSupplier stopf, int a, int b, PlayerMarks searchingPlayer, int depth) {
-        if (stopf.getAsBoolean() || depth == 0 || board.isTerminal()) {
+    private static int maxValue(Board board, BooleanSupplier stopF, int a, int b, PlayerMarks searchingPlayer, int depth) {
+        if (stopF.getAsBoolean() || depth == 0 || board.isTerminal()) {
             leafCount++;
             return switch (searchingPlayer) {
                 case X -> board.getPlayerXScore() - board.getPlayerOScore();
@@ -91,7 +91,7 @@ public class Minimax {
 
         int score = Integer.MIN_VALUE;
         for (byte move : moves) {
-            score = Math.max(score, minValue(moveBoards.get(move), stopf, a, b, searchingPlayer, depth - 1));
+            score = Math.max(score, minValue(moveBoards.get(move), stopF, a, b, searchingPlayer, depth - 1));
             if (score > b) {
                 pruneCount++;
                 return score;
@@ -101,11 +101,11 @@ public class Minimax {
         return score;
     }
 
-    public static void findAll(Tree<ReservationNode> tree, Board board) {
-        findAll(tree, board, board.getCurrentPlayer(), true);
+    public static void evaluateTree(Tree<ReservationNode> tree, Board board) {
+        evaluateTree(tree, board, board.getCurrentPlayer(), true);
     }
 
-    private static void findAll(Tree<ReservationNode> tree, Board board, PlayerMarks searchingPlayer, boolean isMax) {
+    private static void evaluateTree(Tree<ReservationNode> tree, Board board, PlayerMarks searchingPlayer, boolean isMax) {
         if (tree.getChildren().size() == 0) {
             // This node is terminal: calculate value directly
 //            System.out.printf("Attempting to evaluate %s, %s\n", tree.getValue().action, tree.getValue().evaluationScore);
@@ -137,14 +137,14 @@ public class Minimax {
             if (isMax) {
                 tree.getValue().evaluationScore = Integer.MIN_VALUE;
                 for (Tree<ReservationNode> child : tree.getChildren()) {
-                    findAll(child, board, searchingPlayer, false);
+                    evaluateTree(child, board, searchingPlayer, false);
                     if (tree.getValue().evaluationScore < child.getValue().evaluationScore)
                         tree.getValue().evaluationScore = child.getValue().evaluationScore;
                 }
             } else {
                 tree.getValue().evaluationScore = Integer.MAX_VALUE;
                 for (Tree<ReservationNode> child : tree.getChildren()) {
-                    findAll(child, board, searchingPlayer, true);
+                    evaluateTree(child, board, searchingPlayer, true);
                     if (tree.getValue().evaluationScore > child.getValue().evaluationScore)
                         tree.getValue().evaluationScore = child.getValue().evaluationScore;
                 }

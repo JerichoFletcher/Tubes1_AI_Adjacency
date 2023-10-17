@@ -1,4 +1,3 @@
-import java.sql.Array;
 import java.util.*;
 
 public class BotGeneticAlgorithm extends BotBase {
@@ -103,7 +102,7 @@ public class BotGeneticAlgorithm extends BotBase {
             printTree(reservationTree, 0);*/
 
             // call minimax
-            Minimax.findAll(reservationTree, board);
+            Minimax.evaluateTree(reservationTree, board);
 
             // generate new generation
             if (i==n-1){
