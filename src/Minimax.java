@@ -2,39 +2,43 @@ import java.util.*;
 import java.util.function.BooleanSupplier;
 
 public class Minimax {
-    private static int leafCount = 0;
+    private static int leafCount = 0, pruneCount = 0;
 
     public static byte findOne(Board board, BooleanSupplier stopf) {
-        leafCount = 0;
+        leafCount = pruneCount = 0;
 
         List<Byte> moves = board.getEmptySquares();
         Map<Byte, Board> moveBoards = generateNextBoardStates(board);
-        moves.sort(Comparator.comparingInt(move -> -moveBoards.get(move).heuristic(move)));
+        moves.sort(Comparator.comparingInt(move -> -board.heuristic(move)));
 
         // Get the move that produces the board state with maximum evaluation score
         List<Byte> maxResult = new ArrayList<>();
         int maxResultValue = Integer.MIN_VALUE;
 
+        // Initialize alpha and beta
+        int a = Integer.MIN_VALUE, b = Integer.MAX_VALUE;
+
         for (byte move : moves) {
             if (stopf.getAsBoolean()) break;
             Board nextBoard = moveBoards.get(move);
 
-            int score = minValue(nextBoard, stopf, board.getCurrentPlayer());
-            if (score > maxResultValue) {
-                maxResultValue = score;
+            int score = minValue(nextBoard, stopf, a, b, board.getCurrentPlayer());
+            System.out.printf("Found (%s, %s):%s with score %s\n", Coordinate.getX(move), Coordinate.getY(move), board.heuristic(move), score);
+            if (score > a) {
+                a = score;
                 maxResult.clear();
             }
-            if (score == maxResultValue) {
+            if (score == a) {
                 maxResult.add(move);
             }
         }
 
         // Select one of the result candidates at random
-        System.out.printf("Checked %s leaf nodes\n", leafCount);
+        System.out.printf("Checked %s leaf nodes; pruned %s branches\n", leafCount, pruneCount);
         return maxResult.get((int) (Math.random() * maxResult.size()));
     }
 
-    private static int minValue(Board board, BooleanSupplier stopf, PlayerMarks searchingPlayer) {
+    private static int minValue(Board board, BooleanSupplier stopf, int a, int b, PlayerMarks searchingPlayer) {
         if (stopf.getAsBoolean() || board.isTerminal()) {
             leafCount++;
             return switch (searchingPlayer) {
@@ -48,15 +52,19 @@ public class Minimax {
         Map<Byte, Board> moveBoards = generateNextBoardStates(board);
         moves.sort(Comparator.comparingInt(move -> -moveBoards.get(move).heuristic(move)));
 
-        int minResultValue = Integer.MAX_VALUE;
+        int score = Integer.MAX_VALUE;
         for (byte move : moves) {
-            int score = maxValue(moveBoards.get(move), stopf, searchingPlayer);
-            minResultValue = Math.min(minResultValue, score);
+            score = Math.min(score, maxValue(moveBoards.get(move), stopf, a, b, searchingPlayer));
+            if (score < a) {
+                pruneCount++;
+                return score;
+            }
+            b = Math.min(b, score);
         }
-        return minResultValue;
+        return score;
     }
 
-    private static int maxValue(Board board, BooleanSupplier stopf, PlayerMarks searchingPlayer) {
+    private static int maxValue(Board board, BooleanSupplier stopf, int a, int b, PlayerMarks searchingPlayer) {
         if (stopf.getAsBoolean() || board.isTerminal()) {
             leafCount++;
             return switch (searchingPlayer) {
@@ -70,12 +78,16 @@ public class Minimax {
         Map<Byte, Board> moveBoards = generateNextBoardStates(board);
         moves.sort(Comparator.comparingInt(move -> -moveBoards.get(move).heuristic(move)));
 
-        int maxResultValue = Integer.MIN_VALUE;
+        int score = Integer.MIN_VALUE;
         for (byte move : moves) {
-            int score = minValue(moveBoards.get(move), stopf, searchingPlayer);
-            maxResultValue = Math.max(maxResultValue, score);
+            score = Math.max(score, minValue(moveBoards.get(move), stopf, a, b, searchingPlayer));
+            if (score > b) {
+                pruneCount++;
+                return score;
+            }
+            a = Math.max(a, score);
         }
-        return maxResultValue;
+        return score;
     }
 
     private static Map<Byte, Board> generateNextBoardStates(Board board) {

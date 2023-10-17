@@ -101,8 +101,8 @@ public class Board {
         PlayerMarks toCount = this.currentPlayer == PlayerMarks.X ? PlayerMarks.O : PlayerMarks.X;
 
         if (row > 0 && this.getAt(row - 1, col) == toCount) count++;
-        if (row < this.row - 1 && this.getAt(row + 1, col) == toCount) count++;
         if (col > 0 && this.getAt(row, col - 1) == toCount) count++;
+        if (row < this.row - 1 && this.getAt(row + 1, col) == toCount) count++;
         if (col < this.col - 1 && this.getAt(row, col + 1) == toCount) count++;
 
         return count;
