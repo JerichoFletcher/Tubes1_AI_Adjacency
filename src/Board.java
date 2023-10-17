@@ -1,6 +1,7 @@
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.function.ToIntBiFunction;
 
 public class Board {
     private final int row, col;
@@ -76,34 +77,34 @@ public class Board {
      *
      * @return true if roundsLeft = 0, false if otherwise
      */
-    public Boolean isTerminal() {
+    public Boolean
+    isTerminal() {
         return this.pliesLeft == 0 || this.getEmptySquares().isEmpty();
     }
 
     /**
-     * Mengembalikan banyaknya markah lawan yang berubah jika bot memilih aksi pada koordinat yang diberikan.
+     * Mengembalikan nilai heuristik dari kualitas langkah yang diberikan oleh pemain yang memegang giliran saat ini.
      * @param move Koordinat yang diberikan, menggunakan format yang diberikan oleh {@code Coordinate}.
-     * @return Banyak markah lawan yang bertetanggaan dengan kotak pada koordinat yang diberikan.
+     * @return Nilai heuristik kualitas langkah ini. Nilai ini digunakan untuk pengurutan prioritas pemeriksaan langkah.
      */
     public int heuristic(byte move) {
         return this.heuristic(Coordinate.getX(move), Coordinate.getY(move));
     }
 
     /**
-     * Mengembalikan banyaknya markah lawan yang berubah jika bot memilih aksi pada koordinat yang diberikan.
+     * Mengembalikan nilai heuristik dari kualitas langkah yang diberikan oleh pemain yang memegang giliran saat ini.
      *
      * @param row Baris dari koordinat yang diberikan.
      * @param col Kolom dari koordinat yang diberikan.
-     * @return Banyak markah lawan yang bertetanggaan dengan kotak pada koordinat yang diberikan.
+     * @return Nilai heuristik kualitas langkah ini. Nilai ini digunakan untuk pengurutan prioritas pemeriksaan langkah.
      */
     public int heuristic(int row, int col) {
-        int count = 0;
-        PlayerMarks toCount = this.currentPlayer == PlayerMarks.X ? PlayerMarks.O : PlayerMarks.X;
-
-        if (row > 0 && this.getAt(row - 1, col) == toCount) count++;
-        if (col > 0 && this.getAt(row, col - 1) == toCount) count++;
-        if (row < this.row - 1 && this.getAt(row + 1, col) == toCount) count++;
-        if (col < this.col - 1 && this.getAt(row, col + 1) == toCount) count++;
+        // Jumlahkan nilai heuristik untuk kotak ini dan kotak-kotak yang bertetanggaan
+        int count = heuristicPart(row, col);
+        if (row > 0) count += heuristicPart(row - 1, col);
+        if (col > 0) count += heuristicPart(row, col - 1);
+        if (row < this.row - 1) count += heuristicPart(row + 1, col);
+        if (col < this.col - 1) count += heuristicPart(row, col + 1);
 
         return count;
     }
@@ -188,6 +189,11 @@ public class Board {
         this.pliesLeft--;
     }
 
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(this.state) ^ this.currentPlayer.hashCode();
+    }
+
     private void setMark(int row, int col, PlayerMarks mark) {
         this.setMark(row, col, mark, false);
     }
@@ -206,6 +212,34 @@ public class Board {
             case X -> this.playerXScore++;
             case O -> this.playerOScore++;
         }
+    }
+
+    private int heuristicPart(int row, int col) {
+        int count = 0;
+        PlayerMarks toCount = this.currentPlayer == PlayerMarks.X ? PlayerMarks.O : PlayerMarks.X;
+
+        // Hitung banyak markah lawan yang bertetanggaan dengan kotak ini
+        if (row > 0 && this.getAt(row - 1, col) == toCount) count++;
+        if (col > 0 && this.getAt(row, col - 1) == toCount) count++;
+        if (row < this.row - 1 && this.getAt(row + 1, col) == toCount) count++;
+        if (col < this.col - 1 && this.getAt(row, col + 1) == toCount) count++;
+
+        // Periksa apakah ada markah sendiri yang bertetanggaan secara diagonal dan ada kotak kosong
+        // yang bertetanggaan dengan kedua kotak
+        if (row > 0 && col > 0 && this.getAt(row - 1, col - 1) == this.currentPlayer &&
+                (this.getAt(row - 1, col) == PlayerMarks.EMPTY || this.getAt(row, col - 1) == PlayerMarks.EMPTY)
+        ) count--;
+        if (row > 0 && col < this.col - 1 && this.getAt(row - 1, col + 1) == this.currentPlayer &&
+                (this.getAt(row - 1, col) == PlayerMarks.EMPTY || this.getAt(row, col + 1) == PlayerMarks.EMPTY)
+        ) count--;
+        if (row < this.row - 1 && col > 0 && this.getAt(row + 1, col - 1) == this.currentPlayer &&
+                (this.getAt(row + 1, col) == PlayerMarks.EMPTY || this.getAt(row, col - 1) == PlayerMarks.EMPTY)
+        ) count--;
+        if (row < this.row - 1 && col < this.col - 1 && this.getAt(row + 1, col + 1) == this.currentPlayer &&
+                (this.getAt(row + 1, col) == PlayerMarks.EMPTY || this.getAt(row, col + 1) == PlayerMarks.EMPTY)
+        ) count--;
+
+        return count;
     }
 
     private void switchTurn() {

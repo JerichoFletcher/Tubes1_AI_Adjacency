@@ -2,20 +2,34 @@ import java.util.*;
 import java.util.function.BooleanSupplier;
 
 public class Minimax {
+    // 0 = No debug; 1 = Brief; 2 = Verbose
+    private static final int DEBUG = 1;
+
     private static int leafCount = 0, pruneCount = 0;
+    private static final Map<Integer, SearchResult> lastBestMoveFromPosition = new HashMap<>();
 
     public static byte startSearch(Board board, BooleanSupplier stopF, int maxDepth) {
-        SearchResult result = findOne(board, stopF, 1);
-        for (int depth = 2; depth <= maxDepth; depth++) {
+        lastBestMoveFromPosition.clear();
+
+        if (DEBUG >= 1) System.out.printf("Starting search up to depth %s\n", maxDepth);
+        int initialDepth = Math.min(maxDepth, 2);
+        SearchResult result = findOne(board, stopF, initialDepth);
+        for (int depth = initialDepth + 2; depth < maxDepth; depth += 2) {
             if (stopF.getAsBoolean()) break;
             SearchResult currentResult = findOne(board, stopF, depth);
             if (currentResult.evaluation > result.evaluation) result = currentResult;
         }
+        if (!stopF.getAsBoolean() && initialDepth != maxDepth) {
+            SearchResult currentResult = findOne(board, stopF, maxDepth);
+            if (currentResult.evaluation > result.evaluation) result = currentResult;
+        }
+
+        if (DEBUG >= 1) System.out.printf("└-- Stopped search; found best move is %s with score %s\n", Coordinate.toString(result.move), result.evaluation);
         return result.move;
     }
 
     private static SearchResult findOne(Board board, BooleanSupplier stopF, int depth) {
-        System.out.printf("Starting search with depth %s\n", depth);
+        if (DEBUG >= 1) System.out.printf("├-- Starting search with depth %s\n", depth);
         leafCount = pruneCount = 0;
 
         List<Byte> moves = board.getEmptySquares();
@@ -24,29 +38,43 @@ public class Minimax {
 
         // Get the move that produces the board state with maximum evaluation score
         List<Byte> maxResult = new ArrayList<>();
-        int maxResultValue = Integer.MIN_VALUE;
 
         // Initialize alpha and beta
         int a = Integer.MIN_VALUE, b = Integer.MAX_VALUE;
+
+        // Check for the best move from the last iteration first
+        if (lastBestMoveFromPosition.containsKey(board.hashCode())) {
+            byte move = lastBestMoveFromPosition.get(board.hashCode()).move;
+            if (moves.contains(move)) {
+                moves.remove(moves.indexOf(move));
+                moves.add(0, move);
+                if (DEBUG >= 1) System.out.printf("|   ├-- Prioritizing search %s first as it was the last best move\n", Coordinate.toString(move));
+            }
+        }
 
         for (byte move : moves) {
             if (stopF.getAsBoolean()) break;
             Board nextBoard = moveBoards.get(move);
 
             int score = minValue(nextBoard, stopF, a, b, board.getCurrentPlayer(), depth - 1);
+            if (DEBUG >= 2) System.out.printf("|   |   |   └-- Evaluated %s [H = %s] with score %s\n", Coordinate.toString(move), board.heuristic(move), score);
             if (score > a) {
                 a = score;
                 maxResult.clear();
-                System.out.printf("Current best is now (%s, %s): %s with score %s\n", Coordinate.getX(move), Coordinate.getY(move), board.heuristic(move), score);
+                if (DEBUG >= 1) System.out.printf("|   |   └-- Current best is now %s [H = %s] with score %s\n", Coordinate.toString(move), board.heuristic(move), score);
             }
             if (score == a) {
                 maxResult.add(move);
             }
         }
 
-        // Select one of the result candidates at random
-        System.out.printf("Checked %s leaf nodes; pruned %s branches\n", leafCount, pruneCount);
-        return new SearchResult(maxResult.get((int) (Math.random() * maxResult.size())), a);
+        // Store the current best move for the next search deepening
+        byte selectedMove = maxResult.get((int) (Math.random() * maxResult.size()));
+        SearchResult result = new SearchResult(selectedMove, a);
+        lastBestMoveFromPosition.put(board.hashCode(), result);
+
+        if (DEBUG >= 1) System.out.printf("|   └-- Visited %s leaf nodes; pruned %s branches; found %s with score %s\n", leafCount, pruneCount, Coordinate.toString(selectedMove), a);
+        return result;
     }
 
     private static int minValue(Board board, BooleanSupplier stopF, int a, int b, PlayerMarks searchingPlayer, int depth) {
@@ -64,14 +92,31 @@ public class Minimax {
         moves.sort(Comparator.comparingInt(move -> -moveBoards.get(move).heuristic(move)));
 
         int score = Integer.MAX_VALUE;
+        byte bestMove = 0;
+
+        // Check for the best move from the last iteration first
+        if (lastBestMoveFromPosition.containsKey(board.hashCode())) {
+            byte move = lastBestMoveFromPosition.get(board.hashCode()).move;
+            if (moves.contains(move)) {
+                moves.remove(moves.indexOf(move));
+                moves.add(0, move);
+            }
+        }
+
         for (byte move : moves) {
-            score = Math.min(score, maxValue(moveBoards.get(move), stopF, a, b, searchingPlayer, depth - 1));
+            int checkScore = maxValue(moveBoards.get(move), stopF, a, b, searchingPlayer, depth - 1);
+            if (score > checkScore) {
+                score = checkScore;
+                bestMove = move;
+            }
             if (score < a) {
                 pruneCount++;
-                return score;
+                break;
             }
             b = Math.min(b, score);
         }
+
+        lastBestMoveFromPosition.put(board.hashCode(), new SearchResult(bestMove, score));
         return score;
     }
 
@@ -90,14 +135,31 @@ public class Minimax {
         moves.sort(Comparator.comparingInt(move -> -moveBoards.get(move).heuristic(move)));
 
         int score = Integer.MIN_VALUE;
+        byte bestMove = 0;
+
+        // Check for the best move from the last iteration first
+        if (lastBestMoveFromPosition.containsKey(board.hashCode())) {
+            byte move = lastBestMoveFromPosition.get(board.hashCode()).move;
+            if (moves.contains(move)) {
+                moves.remove(moves.indexOf(move));
+                moves.add(0, move);
+            }
+        }
+
         for (byte move : moves) {
-            score = Math.max(score, minValue(moveBoards.get(move), stopF, a, b, searchingPlayer, depth - 1));
+            int checkScore = minValue(moveBoards.get(move), stopF, a, b, searchingPlayer, depth - 1);
+            if (score < checkScore) {
+                score = checkScore;
+                bestMove = move;
+            }
             if (score > b) {
                 pruneCount++;
-                return score;
+                break;
             }
             a = Math.max(a, score);
         }
+
+        lastBestMoveFromPosition.put(board.hashCode(), new SearchResult(bestMove, score));
         return score;
     }
 
@@ -108,8 +170,6 @@ public class Minimax {
     private static void evaluateTree(Tree<ReservationNode> tree, Board board, PlayerMarks searchingPlayer, boolean isMax) {
         if (tree.getChildren().size() == 0) {
             // This node is terminal: calculate value directly
-//            System.out.printf("Attempting to evaluate %s, %s\n", tree.getValue().action, tree.getValue().evaluationScore);
-
             Board leafBoard = new Board(board);
             List<Byte> actions = new ArrayList<>();
 
@@ -121,9 +181,7 @@ public class Minimax {
                 currentTree = currentTree.getParent();
             }
             for (Byte action : actions) {
-//                System.out.printf("  > Acting out %s...", action);
                 leafBoard.act(action);
-//                System.out.println(" done!");
             }
 
             // Calculate the evaluation score
