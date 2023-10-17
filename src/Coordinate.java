@@ -8,7 +8,7 @@ public class Coordinate {
         return (byte) (coordinate & 0xF);
     }
 
-    public static byte of(byte x, byte y) {
+    public static byte of(int x, int y) {
         return (byte) (((x & 0xF) << 4) | (y & 0xF));
     }
 

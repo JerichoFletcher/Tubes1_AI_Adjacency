@@ -1,11 +1,9 @@
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.function.ToIntBiFunction;
+import java.util.*;
 
 public class Board {
     private final int row, col;
     private final PlayerMarks[][] state;
+    private final Set<Byte> emptySquares;
     private PlayerMarks currentPlayer;
     private int playerXScore;
     private int playerOScore;
@@ -35,6 +33,13 @@ public class Board {
         for (int i = 0; i < row; i++) {
             Arrays.fill(this.state[i], PlayerMarks.EMPTY);
         }
+
+        this.emptySquares = new HashSet<>();
+        for (int r = 0; r < this.row; r++) {
+            for (int c = 0; c < this.col; c++) {
+                this.emptySquares.add(Coordinate.of(r, c));
+            }
+        }
     }
 
     /**
@@ -44,12 +49,19 @@ public class Board {
      * @throws NullPointerException Jika {@code other} bernilai {@code null}.
      */
     public Board(Board other) {
-        this(other.row, other.col, other.currentPlayer, other.pliesLeft);
         if (other == null) throw new NullPointerException();
 
+        this.row = other.row;
+        this.col = other.col;
+        this.currentPlayer = other.currentPlayer;
+        this.pliesLeft = other.pliesLeft;
+
+        this.state = new PlayerMarks[this.row][this.col];
         for (int i = 0; i < row; i++) {
             System.arraycopy(other.state[i], 0, this.state[i], 0, col);
         }
+
+        this.emptySquares = new HashSet<>(other.emptySquares);
 
         this.playerXScore = other.playerXScore;
         this.playerOScore = other.playerOScore;
@@ -61,15 +73,16 @@ public class Board {
      * @return List berisi koordinat kotak-kotak kosong pada papan.
      */
     public List<Byte> getEmptySquares() {
-        ArrayList<Byte> emptySquares = new ArrayList<Byte>();
-        for (int i = 0; i < row; i++) {
-            for (int j = 0; j < col; j++) {
-                if (this.state[i][j].equals(PlayerMarks.EMPTY)) {
-                    emptySquares.add(Coordinate.of((byte) i, (byte) j));
-                }
-            }
-        }
-        return emptySquares;
+        return new ArrayList<>(this.emptySquares);
+//        ArrayList<Byte> emptySquares = new ArrayList<Byte>();
+//        for (int i = 0; i < row; i++) {
+//            for (int j = 0; j < col; j++) {
+//                if (this.state[i][j].equals(PlayerMarks.EMPTY)) {
+//                    emptySquares.add(Coordinate.of((byte) i, (byte) j));
+//                }
+//            }
+//        }
+//        return emptySquares;
     }
 
     /**
@@ -203,6 +216,7 @@ public class Board {
         if (skipEmpty && oldMark == PlayerMarks.EMPTY) return;
 
         this.state[row][col] = mark;
+        this.emptySquares.remove(Coordinate.of(row, col));
 
         switch (oldMark) {
             case X -> this.playerXScore--;

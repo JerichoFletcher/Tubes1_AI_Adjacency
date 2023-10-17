@@ -17,11 +17,11 @@ public class Minimax {
         for (int depth = initialDepth + 2; depth < maxDepth; depth += 2) {
             if (stopF.getAsBoolean()) break;
             SearchResult currentResult = findOne(board, stopF, depth);
-            if (currentResult.evaluation > result.evaluation) result = currentResult;
+            result = !stopF.getAsBoolean() || currentResult.evaluation > result.evaluation ? currentResult : result;
         }
         if (!stopF.getAsBoolean() && initialDepth != maxDepth) {
             SearchResult currentResult = findOne(board, stopF, maxDepth);
-            if (currentResult.evaluation > result.evaluation) result = currentResult;
+            result = !stopF.getAsBoolean() || currentResult.evaluation > result.evaluation ? currentResult : result;
         }
 
         if (DEBUG >= 1) System.out.printf("└-- Stopped search; found best move is %s with score %s\n", Coordinate.toString(result.move), result.evaluation);
