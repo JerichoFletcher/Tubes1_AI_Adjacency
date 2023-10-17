@@ -56,7 +56,6 @@ You can make the Bot start first.
 </ul>
 
 ### Kontibutor
-## Author
 | NIM  | Nama |
 | ------------- | ------------- |
 | 13521059 | Arleen Chrysantha Gunardi |
