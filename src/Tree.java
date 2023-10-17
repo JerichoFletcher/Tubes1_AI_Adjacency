@@ -27,8 +27,30 @@ public class Tree<T> {
          return this.children;
      }
 
+     public Tree<T> getChild(T value) {
+         for (Tree<T> child : this.children){
+             if (child.getValue() == value) {
+                 return child;
+             }
+         }
+         return null;
+     }
+
+     public boolean hasParent(){
+         return (parent != null);
+     }
+
     public boolean hasChild(Tree<T> child) {
         return this.children.contains(child);
+    }
+
+    public boolean hasChildTValue(T childValue){
+        for (Tree<T> child : this.children) {
+            if (child.getValue() == childValue) {
+                return true;
+            }
+        }
+        return false;
     }
 
      public void addChild(Tree<T> child) {
