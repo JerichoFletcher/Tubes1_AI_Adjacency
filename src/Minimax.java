@@ -4,7 +4,18 @@ import java.util.function.BooleanSupplier;
 public class Minimax {
     private static int leafCount = 0, pruneCount = 0;
 
-    public static byte findOne(Board board, BooleanSupplier stopf) {
+    public static byte startSearch(Board board, BooleanSupplier stopf, int maxDepth) {
+        SearchResult result = findOne(board, stopf, 1);
+        for (int depth = 2; depth <= maxDepth; depth++) {
+            if (stopf.getAsBoolean()) break;
+            SearchResult currentResult = findOne(board, stopf, depth);
+            if (currentResult.evaluation > result.evaluation) result = currentResult;
+        }
+        return result.move;
+    }
+
+    private static SearchResult findOne(Board board, BooleanSupplier stopf, int depth) {
+        System.out.printf("Starting search with depth %s\n", depth);
         leafCount = pruneCount = 0;
 
         List<Byte> moves = board.getEmptySquares();
@@ -22,11 +33,11 @@ public class Minimax {
             if (stopf.getAsBoolean()) break;
             Board nextBoard = moveBoards.get(move);
 
-            int score = minValue(nextBoard, stopf, a, b, board.getCurrentPlayer());
-            System.out.printf("Found (%s, %s):%s with score %s\n", Coordinate.getX(move), Coordinate.getY(move), board.heuristic(move), score);
+            int score = minValue(nextBoard, stopf, a, b, board.getCurrentPlayer(), depth - 1);
             if (score > a) {
                 a = score;
                 maxResult.clear();
+                System.out.printf("Current best is now (%s, %s): %s with score %s\n", Coordinate.getX(move), Coordinate.getY(move), board.heuristic(move), score);
             }
             if (score == a) {
                 maxResult.add(move);
@@ -35,11 +46,11 @@ public class Minimax {
 
         // Select one of the result candidates at random
         System.out.printf("Checked %s leaf nodes; pruned %s branches\n", leafCount, pruneCount);
-        return maxResult.get((int) (Math.random() * maxResult.size()));
+        return new SearchResult(maxResult.get((int) (Math.random() * maxResult.size())), a);
     }
 
-    private static int minValue(Board board, BooleanSupplier stopf, int a, int b, PlayerMarks searchingPlayer) {
-        if (stopf.getAsBoolean() || board.isTerminal()) {
+    private static int minValue(Board board, BooleanSupplier stopf, int a, int b, PlayerMarks searchingPlayer, int depth) {
+        if (stopf.getAsBoolean() || depth == 0 || board.isTerminal()) {
             leafCount++;
             return switch (searchingPlayer) {
                 case X -> board.getPlayerXScore() - board.getPlayerOScore();
@@ -54,7 +65,7 @@ public class Minimax {
 
         int score = Integer.MAX_VALUE;
         for (byte move : moves) {
-            score = Math.min(score, maxValue(moveBoards.get(move), stopf, a, b, searchingPlayer));
+            score = Math.min(score, maxValue(moveBoards.get(move), stopf, a, b, searchingPlayer, depth - 1));
             if (score < a) {
                 pruneCount++;
                 return score;
@@ -64,8 +75,8 @@ public class Minimax {
         return score;
     }
 
-    private static int maxValue(Board board, BooleanSupplier stopf, int a, int b, PlayerMarks searchingPlayer) {
-        if (stopf.getAsBoolean() || board.isTerminal()) {
+    private static int maxValue(Board board, BooleanSupplier stopf, int a, int b, PlayerMarks searchingPlayer, int depth) {
+        if (stopf.getAsBoolean() || depth == 0 || board.isTerminal()) {
             leafCount++;
             return switch (searchingPlayer) {
                 case X -> board.getPlayerXScore() - board.getPlayerOScore();
@@ -80,7 +91,7 @@ public class Minimax {
 
         int score = Integer.MIN_VALUE;
         for (byte move : moves) {
-            score = Math.max(score, minValue(moveBoards.get(move), stopf, a, b, searchingPlayer));
+            score = Math.max(score, minValue(moveBoards.get(move), stopf, a, b, searchingPlayer, depth - 1));
             if (score > b) {
                 pruneCount++;
                 return score;
@@ -153,5 +164,15 @@ public class Minimax {
         }
 
         return moveBoards;
+    }
+
+    private static class SearchResult {
+        public byte move;
+        public int evaluation;
+
+        public SearchResult(byte move, int evaluation) {
+            this.move = move;
+            this.evaluation = evaluation;
+        }
     }
 }
