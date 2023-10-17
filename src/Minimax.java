@@ -90,6 +90,57 @@ public class Minimax {
         return score;
     }
 
+    public static void findAll(Tree<ReservationNode> tree, Board board) {
+        findAll(tree, board, board.getCurrentPlayer(), true);
+    }
+
+    private static void findAll(Tree<ReservationNode> tree, Board board, PlayerMarks searchingPlayer, boolean isMax) {
+        if (tree.getChildren().size() == 0) {
+            // This node is terminal: calculate value directly
+//            System.out.printf("Attempting to evaluate %s, %s\n", tree.getValue().action, tree.getValue().evaluationScore);
+
+            Board leafBoard = new Board(board);
+            List<Byte> actions = new ArrayList<>();
+
+            // Simulate acting out this path on the board
+            Tree<ReservationNode> currentTree = tree;
+            while (currentTree.getParent() != null) {
+                if (currentTree.getParent() != null)
+                    actions.add(0, currentTree.getValue().action);
+                currentTree = currentTree.getParent();
+            }
+            for (Byte action : actions) {
+//                System.out.printf("  > Acting out %s...", action);
+                leafBoard.act(action);
+//                System.out.println(" done!");
+            }
+
+            // Calculate the evaluation score
+            tree.getValue().evaluationScore = switch (searchingPlayer) {
+                case X -> leafBoard.getPlayerXScore() - leafBoard.getPlayerOScore();
+                case O -> leafBoard.getPlayerOScore() - leafBoard.getPlayerXScore();
+                default -> throw new RuntimeException();
+            };
+        } else {
+            // Perform minimax search
+            if (isMax) {
+                tree.getValue().evaluationScore = Integer.MIN_VALUE;
+                for (Tree<ReservationNode> child : tree.getChildren()) {
+                    findAll(child, board, searchingPlayer, false);
+                    if (tree.getValue().evaluationScore < child.getValue().evaluationScore)
+                        tree.getValue().evaluationScore = child.getValue().evaluationScore;
+                }
+            } else {
+                tree.getValue().evaluationScore = Integer.MAX_VALUE;
+                for (Tree<ReservationNode> child : tree.getChildren()) {
+                    findAll(child, board, searchingPlayer, true);
+                    if (tree.getValue().evaluationScore > child.getValue().evaluationScore)
+                        tree.getValue().evaluationScore = child.getValue().evaluationScore;
+                }
+            }
+        }
+    }
+
     private static Map<Byte, Board> generateNextBoardStates(Board board) {
         List<Byte> moves = board.getEmptySquares();
         Map<Byte, Board> moveBoards = new HashMap<>();

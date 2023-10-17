@@ -26,5 +26,6 @@ public class Individual {
                 break;
             }
         } while (currentTree.hasParent());
+        this.fitnessValue *= this.fitnessValue;
     }
 }

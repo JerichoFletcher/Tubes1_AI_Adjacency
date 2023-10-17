@@ -1,4 +1,5 @@
 import java.lang.Override;
+import java.util.Objects;
 
 public class ReservationNode {
     public Integer evaluationScore;
@@ -12,7 +13,7 @@ public class ReservationNode {
     @Override
     public boolean equals(Object obj){
         return obj instanceof ReservationNode node
-                && this.evaluationScore == node.evaluationScore
-                && this.action == node.action;
+//                && Objects.equals(this.evaluationScore, node.evaluationScore)
+                && Objects.equals(this.action, node.action);
     }
 }

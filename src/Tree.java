@@ -1,5 +1,7 @@
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class Tree<T> {
      private T value;
@@ -28,11 +30,12 @@ public class Tree<T> {
      }
 
      public Tree<T> getChild(T value) {
-         for (Tree<T> child : this.children){
-             if (child.getValue() == value) {
-                 return child;
-             }
-         }
+         return this.getChild(child -> child.getValue().equals(value));
+     }
+
+     public Tree<T> getChild(Predicate<Tree<T>> predicate) {
+         for (Tree<T> child : this.children)
+             if (predicate.test(child)) return child;
          return null;
      }
 
@@ -46,7 +49,7 @@ public class Tree<T> {
 
     public boolean hasChildTValue(T childValue){
         for (Tree<T> child : this.children) {
-            if (child.getValue() == childValue) {
+            if (child.getValue().equals(childValue)) {
                 return true;
             }
         }
@@ -56,6 +59,7 @@ public class Tree<T> {
      public void addChild(Tree<T> child) {
          if (this.children.contains(child)) return;
          if (child.parent != null) child.parent.removeChild(child);
+         child.parent = this;
          this.children.add(child);
      }
 

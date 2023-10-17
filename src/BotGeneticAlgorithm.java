@@ -1,12 +1,10 @@
 import java.sql.Array;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 public class BotGeneticAlgorithm extends BotBase {
-    private static int n = 100;
-    private static int k = 10;
-    private static double mutationRates = 0.2;
+    private static final int n = 1500;
+    private static final int k = 50;
+    private static final double mutationRates = 0.033;
 
     protected List<Individual> generateNewGeneration(Board board){
         //generate generasi: for k individu:, for depth: getallemptysquares --> ambil random dari sini, masukin ke arr aksi,
@@ -14,13 +12,14 @@ public class BotGeneticAlgorithm extends BotBase {
         for (int i = 0; i < k; i++) {
             // generate k individuals
             List<Byte> emptySquares = board.getEmptySquares();
-            Individual individual = new Individual(new Byte[board.getPliesLeft()], new Tree<ReservationNode>(null));
+            Individual individual = new Individual(new Byte[board.getPliesLeft()], new Tree<>(new ReservationNode(null, null)));
             for (int j = 0; j < board.getPliesLeft(); j++) {
                 // generate random actions (individual)
                 int emptySquareIdx = (int) (Math.random() * emptySquares.size());
                 individual.setAction(j, emptySquares.get(emptySquareIdx));
                 emptySquares.remove(emptySquareIdx);
             }
+//            System.out.printf("Individual action is %s\n", String.join(", ", Arrays.stream(individual.actions).map(Object::toString).toArray(String[]::new)));
             generation.add(individual);
         }
         return generation;
@@ -32,7 +31,7 @@ public class BotGeneticAlgorithm extends BotBase {
             ReservationNode actionNode = new ReservationNode(null, action);
             if (!currentTree.hasChildTValue(actionNode)){
                 // if ga ada child actionnya
-                currentTree.addChild(new Tree<ReservationNode>(actionNode));
+                currentTree.addChild(new Tree<>(actionNode));
             }
             currentTree = currentTree.getChild(actionNode);
         }
@@ -50,11 +49,11 @@ public class BotGeneticAlgorithm extends BotBase {
          * mutate: if math random < laju mutasi[0..1]
          * return 1 doang
          * */
-        Individual child = new Individual(new Byte[parent1.actions.length], new Tree<ReservationNode>(null));
+        Individual child = new Individual(new Byte[parent1.actions.length], new Tree<>(new ReservationNode(null, null)));
 
         // crossover
         int crossoverPoint = (int) (Math.random() * parent1.actions.length);
-        System.arraycopy(child.actions, 0, parent1.actions, 0, parent1.actions.length);
+        System.arraycopy(parent1.actions, 0, child.actions, 0, parent1.actions.length);
         System.arraycopy(parent2.actions, crossoverPoint, child.actions, crossoverPoint, parent2.actions.length - crossoverPoint);
 
         // mutation
@@ -88,8 +87,9 @@ public class BotGeneticAlgorithm extends BotBase {
         return child;
     }
 
+    @Override
     protected byte searchMove(Board board) {
-        Tree<ReservationNode> reservationTree = new Tree<ReservationNode>(null);
+        Tree<ReservationNode> reservationTree = new Tree<>(new ReservationNode(null, null));
         List<Individual> generation = generateNewGeneration(board);
         for (int i = 0; i < n; i++) {
             if (isStopped()){
@@ -99,7 +99,11 @@ public class BotGeneticAlgorithm extends BotBase {
             for (Individual individual : generation) {
                 reserve(reservationTree, individual);
             }
+            /*System.out.printf("=== STARTING ITERATION %s ===\n", i);
+            printTree(reservationTree, 0);*/
+
             // call minimax
+            Minimax.findAll(reservationTree, board);
 
             // generate new generation
             if (i==n-1){
@@ -135,10 +139,22 @@ public class BotGeneticAlgorithm extends BotBase {
                 }
             }
 
-            generation = newGeneration;
+            generation.clear();
+            generation.addAll(newGeneration);
+            newGeneration.clear();
         }
 
-        return reservationTree.getChild(reservationTree.getValue()).getValue().action;
+        /*System.out.println("=== FINAL TREE ===");
+        printTree(reservationTree, 0);*/
+
+        return reservationTree.getChild(
+                child -> Objects.equals(child.getValue().evaluationScore, reservationTree.getValue().evaluationScore)
+        ).getValue().action;
     }
 
+    /*private void printTree(Tree<ReservationNode> tree, int indent) {
+        for (int i = 0; i < indent; i++) System.out.print("  ");
+        System.out.printf("%s\n", tree.getValue().action);
+        for (Tree<ReservationNode> child : tree.getChildren()) printTree(child, indent + 1);
+    }*/
 }
