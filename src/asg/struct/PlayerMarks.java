@@ -1,3 +1,5 @@
+package asg.struct;
+
 public enum PlayerMarks {
     EMPTY,
     X,

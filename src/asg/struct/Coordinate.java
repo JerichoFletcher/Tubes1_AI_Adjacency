@@ -1,3 +1,5 @@
+package asg.struct;
+
 public class Coordinate {
     // xxxxyyyy
     public static byte getX(byte coordinate) {

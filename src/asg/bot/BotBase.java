@@ -1,3 +1,8 @@
+package asg.bot;
+
+import asg.struct.Board;
+import asg.struct.Coordinate;
+
 public abstract class BotBase {
     private boolean stopped = false;
 

@@ -1,3 +1,7 @@
+package asg.bot;
+
+import asg.struct.Board;
+
 import java.util.ArrayList;
 import java.util.List;
 

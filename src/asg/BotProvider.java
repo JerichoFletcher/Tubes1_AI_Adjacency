@@ -1,3 +1,7 @@
+package asg;
+
+import asg.bot.*;
+
 import java.util.*;
 import java.util.stream.Stream;
 

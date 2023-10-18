@@ -1,3 +1,7 @@
+package asg.struct;
+
+import asg.Vars;
+
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 

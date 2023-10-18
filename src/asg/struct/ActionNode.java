@@ -1,3 +1,5 @@
+package asg.struct;
+
 import java.lang.Override;
 import java.util.Objects;
 

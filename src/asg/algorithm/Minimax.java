@@ -1,3 +1,7 @@
+package asg.algorithm;
+
+import asg.struct.*;
+
 import java.util.*;
 import java.util.function.BooleanSupplier;
 
