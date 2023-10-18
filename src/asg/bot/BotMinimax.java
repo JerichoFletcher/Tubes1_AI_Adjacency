@@ -1,3 +1,8 @@
+package asg.bot;
+
+import asg.algorithm.Minimax;
+import asg.struct.Board;
+
 public class BotMinimax extends BotBase {
     @Override
     /**

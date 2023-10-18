@@ -8,7 +8,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="OutputFrameController"
+            fx:controller="asg.ui.OutputFrameController"
             prefWidth="800"
             prefHeight="500">
     <center>

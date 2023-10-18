@@ -1,3 +1,5 @@
+package asg.struct;
+
 public class Individual {
     public Byte[] actions;
     public Tree<ActionNode> leaf;

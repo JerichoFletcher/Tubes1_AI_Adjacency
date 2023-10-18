@@ -1,3 +1,11 @@
+package asg.bot;
+
+import asg.algorithm.Minimax;
+import asg.struct.ActionNode;
+import asg.struct.Board;
+import asg.struct.Individual;
+import asg.struct.Tree;
+
 import java.util.*;
 
 public class BotGeneticAlgorithm extends BotBase {

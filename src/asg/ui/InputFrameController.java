@@ -1,3 +1,7 @@
+package asg.ui;
+
+import asg.BotProvider;
+import asg.struct.PlayerMarks;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -94,7 +98,7 @@ public class InputFrameController{
             Stage primaryStage = (Stage) this.player1.getScene().getWindow();
             primaryStage.close();
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("OutputFrame.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("OutputFrame.fxml"));
             Parent root = loader.load();
 
             // Get controller of output frame and pass input including player names and number of rounds chosen.

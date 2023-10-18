@@ -1,3 +1,10 @@
+package asg.ui;
+
+import asg.BotProvider;
+import asg.Vars;
+import asg.bot.BotBase;
+import asg.struct.Board;
+import asg.struct.PlayerMarks;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.concurrent.Task;
@@ -280,7 +287,7 @@ public class OutputFrameController {
         secondaryStage.close();
 
         // Reopen primary stage/input frame.
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("InputFrame.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("InputFrame.fxml"));
         Parent root = loader.load();
         Stage primaryStage = new Stage();
         primaryStage.setTitle("Adjacency Gameplay");
