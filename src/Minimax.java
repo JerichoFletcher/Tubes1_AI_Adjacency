@@ -101,11 +101,11 @@ public class Minimax {
         return score;
     }
 
-    public static void evaluateTree(Tree<ReservationNode> tree, Board board) {
+    public static void evaluateTree(Tree<ActionNode> tree, Board board) {
         evaluateTree(tree, board, board.getCurrentPlayer(), true);
     }
 
-    private static void evaluateTree(Tree<ReservationNode> tree, Board board, PlayerMarks searchingPlayer, boolean isMax) {
+    private static void evaluateTree(Tree<ActionNode> tree, Board board, PlayerMarks searchingPlayer, boolean isMax) {
         if (tree.getChildren().size() == 0) {
             // This node is terminal: calculate value directly
 //            System.out.printf("Attempting to evaluate %s, %s\n", tree.getValue().action, tree.getValue().evaluationScore);
@@ -114,7 +114,7 @@ public class Minimax {
             List<Byte> actions = new ArrayList<>();
 
             // Simulate acting out this path on the board
-            Tree<ReservationNode> currentTree = tree;
+            Tree<ActionNode> currentTree = tree;
             while (currentTree.getParent() != null) {
                 if (currentTree.getParent() != null)
                     actions.add(0, currentTree.getValue().action);
@@ -136,14 +136,14 @@ public class Minimax {
             // Perform minimax search
             if (isMax) {
                 tree.getValue().evaluationScore = Integer.MIN_VALUE;
-                for (Tree<ReservationNode> child : tree.getChildren()) {
+                for (Tree<ActionNode> child : tree.getChildren()) {
                     evaluateTree(child, board, searchingPlayer, false);
                     if (tree.getValue().evaluationScore < child.getValue().evaluationScore)
                         tree.getValue().evaluationScore = child.getValue().evaluationScore;
                 }
             } else {
                 tree.getValue().evaluationScore = Integer.MAX_VALUE;
-                for (Tree<ReservationNode> child : tree.getChildren()) {
+                for (Tree<ActionNode> child : tree.getChildren()) {
                     evaluateTree(child, board, searchingPlayer, true);
                     if (tree.getValue().evaluationScore > child.getValue().evaluationScore)
                         tree.getValue().evaluationScore = child.getValue().evaluationScore;
@@ -152,7 +152,7 @@ public class Minimax {
         }
     }
 
-    private static Map<Byte, Board> generateNextBoardStates(Board board) {
+    public static Map<Byte, Board> generateNextBoardStates(Board board) {
         List<Byte> moves = board.getEmptySquares();
         Map<Byte, Board> moveBoards = new HashMap<>();
 

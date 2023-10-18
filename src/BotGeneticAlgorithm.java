@@ -11,7 +11,7 @@ public class BotGeneticAlgorithm extends BotBase {
         for (int i = 0; i < k; i++) {
             // generate k individuals
             List<Byte> emptySquares = board.getEmptySquares();
-            Individual individual = new Individual(new Byte[board.getPliesLeft()], new Tree<>(new ReservationNode(null, null)));
+            Individual individual = new Individual(new Byte[board.getPliesLeft()], new Tree<>(new ActionNode()));
             for (int j = 0; j < board.getPliesLeft(); j++) {
                 // generate random actions (individual)
                 int emptySquareIdx = (int) (Math.random() * emptySquares.size());
@@ -24,10 +24,10 @@ public class BotGeneticAlgorithm extends BotBase {
         return generation;
     }
 
-    protected void reserve (Tree<ReservationNode> reservationTree, Individual individual){
-        Tree<ReservationNode> currentTree = reservationTree;
+    protected void reserve (Tree<ActionNode> reservationTree, Individual individual){
+        Tree<ActionNode> currentTree = reservationTree;
         for (Byte action : individual.actions) {
-            ReservationNode actionNode = new ReservationNode(null, action);
+            ActionNode actionNode = new ActionNode(null, action);
             if (!currentTree.hasChildTValue(actionNode)){
                 // if ga ada child actionnya
                 currentTree.addChild(new Tree<>(actionNode));
@@ -48,7 +48,7 @@ public class BotGeneticAlgorithm extends BotBase {
          * mutate: if math random < laju mutasi[0..1]
          * return 1 doang
          * */
-        Individual child = new Individual(new Byte[parent1.actions.length], new Tree<>(new ReservationNode(null, null)));
+        Individual child = new Individual(new Byte[parent1.actions.length], new Tree<>(new ActionNode()));
 
         // crossover
         int crossoverPoint = (int) (Math.random() * parent1.actions.length);
@@ -88,7 +88,7 @@ public class BotGeneticAlgorithm extends BotBase {
 
     @Override
     protected byte searchMove(Board board) {
-        Tree<ReservationNode> reservationTree = new Tree<>(new ReservationNode(null, null));
+        Tree<ActionNode> reservationTree = new Tree<>(new ActionNode());
         List<Individual> generation = generateNewGeneration(board);
         for (int i = 0; i < n; i++) {
             if (isStopped()){
