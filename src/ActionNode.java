@@ -1,6 +1,7 @@
 import java.lang.Override;
 import java.util.Objects;
 
+// Action Node Class
 public class ActionNode {
     public Integer evaluationScore;
     public Byte action;

@@ -15,7 +15,7 @@ public class Individual {
     }
 
     public void calcFitnessValue(){
-        // Fitness value = banyaknya level dia bisa naik
+        // Fitness value merupakan banyaknya sebuah node dipilih untuk menjadi nilai parentnya
         this.fitnessValue = 0;
         Tree<ActionNode> currentTree = this.leaf;
         do {
