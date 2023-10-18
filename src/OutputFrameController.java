@@ -69,7 +69,7 @@ public class OutputFrameController {
         this.playerOName.setText(name2);
         this.roundsLeftLabel.setText(rounds.toString());
 
-        this.currentBoard = new Board(Vars.BOARD_ROW_COUNT, Vars.BOARD_COL_COUNT, firstPlayer, 2 * rounds);
+        this.currentBoard = new Board(firstPlayer, 2 * rounds);
         this.currentBoard.setAt(Vars.BOARD_ROW_COUNT - 2, 0, PlayerMarks.X);
         this.currentBoard.setAt(Vars.BOARD_ROW_COUNT - 1, 0, PlayerMarks.X);
         this.currentBoard.setAt(Vars.BOARD_ROW_COUNT - 2, 1, PlayerMarks.X);
