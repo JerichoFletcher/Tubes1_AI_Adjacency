@@ -12,7 +12,7 @@ public class BotProvider {
             {"Random (test)", BotRandom.class},
             {"Greedy (test)", BotGreedy.class},
             {"Minimax Bot", BotMinimax.class},
-            {"Local Search Bot", BotBase.class},
+            {"Local Search Bot", BotLocal.class},
             {"Genetic Algorithm Bot", BotGeneticAlgorithm.class}
     }).collect(HashMap::new, (map, val) -> {
         map.put((String) val[0], (Class<? extends BotBase>) val[1]);

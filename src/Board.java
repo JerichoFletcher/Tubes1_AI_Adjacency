@@ -1,32 +1,44 @@
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Board {
+    private static final long[][] ZOBRIST_BOARD_BITSTRINGS;
+    private static final long ZOBRIST_PLAYER_X_BITSTRING;
+    static {
+        // Inisialisasi bitstring acak untuk setiap kotak
+        ZOBRIST_BOARD_BITSTRINGS = new long[PlayerMarks.values().length][Vars.BOARD_ROW_COUNT * Vars.BOARD_COL_COUNT];
+        for (int i = 0; i < Vars.BOARD_ROW_COUNT * Vars.BOARD_COL_COUNT; i++) {
+            for (int j = 0; j < ZOBRIST_BOARD_BITSTRINGS.length; j++) {
+                ZOBRIST_BOARD_BITSTRINGS[j][i] = j == PlayerMarks.EMPTY.ordinal() ? 0 : ThreadLocalRandom.current().nextLong();
+            }
+        }
+        // Inisialisasi bistring acak untuk giliran pemain
+        ZOBRIST_PLAYER_X_BITSTRING = ThreadLocalRandom.current().nextLong();
+    }
+
     private final int row, col;
     private final PlayerMarks[][] state;
+    private final Set<Byte> emptySquares;
     private PlayerMarks currentPlayer;
     private int playerXScore;
     private int playerOScore;
     private int pliesLeft;
+    private long zobristHash;
 
     /**
      * Menginisialisasi sebuah papan baru.
      *
-     * @param row           Banyak baris pada papan.
-     * @param col           Banyak kolom pada papan.
      * @param currentPlayer Pemain yang memegang giliran sekarang pada permainan.
      * @param pliesLeft     Banyak ronde yang tersisa.
-     * @throws IllegalArgumentException Jika {@code row}, {@code col}, atau {@code pliesLeft} tidak bernilai positif,
+     * @throws IllegalArgumentException Jika {@code pliesLeft} tidak bernilai positif,
      *                                  atau jika {@code currentPlayer} bukan pemain valid.
      */
-    public Board(int row, int col, PlayerMarks currentPlayer, int pliesLeft) {
-        if (row <= 0 || col <= 0) throw new IllegalArgumentException("Size must be at least 1x1");
+    public Board(PlayerMarks currentPlayer, int pliesLeft) {
         if (currentPlayer == PlayerMarks.EMPTY) throw new IllegalArgumentException("Current player cannot be empty");
         if (pliesLeft <= 0) throw new IllegalArgumentException("Number of plies left must be positive");
 
-        this.row = row;
-        this.col = col;
+        this.row = Vars.BOARD_ROW_COUNT;
+        this.col = Vars.BOARD_COL_COUNT;
         this.currentPlayer = currentPlayer;
         this.pliesLeft = pliesLeft;
 
@@ -34,6 +46,16 @@ public class Board {
         for (int i = 0; i < row; i++) {
             Arrays.fill(this.state[i], PlayerMarks.EMPTY);
         }
+
+        this.emptySquares = new HashSet<>();
+        for (int r = 0; r < this.row; r++) {
+            for (int c = 0; c < this.col; c++) {
+                this.emptySquares.add(Coordinate.of(r, c));
+            }
+        }
+
+        // Inisialisasi hash Zobrist
+        this.zobristHash = this.currentPlayer == PlayerMarks.X ? ZOBRIST_PLAYER_X_BITSTRING : 0;
     }
 
     /**
@@ -43,15 +65,25 @@ public class Board {
      * @throws NullPointerException Jika {@code other} bernilai {@code null}.
      */
     public Board(Board other) {
-        this(other.row, other.col, other.currentPlayer, other.pliesLeft);
         if (other == null) throw new NullPointerException();
 
+        this.row = other.row;
+        this.col = other.col;
+        this.currentPlayer = other.currentPlayer;
+        this.pliesLeft = other.pliesLeft;
+
+        this.state = new PlayerMarks[this.row][this.col];
         for (int i = 0; i < row; i++) {
             System.arraycopy(other.state[i], 0, this.state[i], 0, col);
         }
 
+        this.emptySquares = new HashSet<>(other.emptySquares);
+
         this.playerXScore = other.playerXScore;
         this.playerOScore = other.playerOScore;
+
+        // Inisialisasi hash Zobrist
+        this.zobristHash = other.zobristHash;
     }
 
     /**
@@ -60,15 +92,7 @@ public class Board {
      * @return List berisi koordinat kotak-kotak kosong pada papan.
      */
     public List<Byte> getEmptySquares() {
-        ArrayList<Byte> emptySquares = new ArrayList<Byte>();
-        for (int i = 0; i < row; i++) {
-            for (int j = 0; j < col; j++) {
-                if (this.state[i][j].equals(PlayerMarks.EMPTY)) {
-                    emptySquares.add(Coordinate.of((byte) i, (byte) j));
-                }
-            }
-        }
-        return emptySquares;
+        return new ArrayList<>(this.emptySquares);
     }
 
     /**
@@ -81,29 +105,28 @@ public class Board {
     }
 
     /**
-     * Mengembalikan banyaknya markah lawan yang berubah jika bot memilih aksi pada koordinat yang diberikan.
+     * Mengembalikan nilai heuristik dari kualitas langkah yang diberikan oleh pemain yang memegang giliran saat ini.
      * @param move Koordinat yang diberikan, menggunakan format yang diberikan oleh {@code Coordinate}.
-     * @return Banyak markah lawan yang bertetanggaan dengan kotak pada koordinat yang diberikan.
+     * @return Nilai heuristik kualitas langkah ini. Nilai ini digunakan untuk pengurutan prioritas pemeriksaan langkah.
      */
     public int heuristic(byte move) {
         return this.heuristic(Coordinate.getX(move), Coordinate.getY(move));
     }
 
     /**
-     * Mengembalikan banyaknya markah lawan yang berubah jika bot memilih aksi pada koordinat yang diberikan.
+     * Mengembalikan nilai heuristik dari kualitas langkah yang diberikan oleh pemain yang memegang giliran saat ini.
      *
      * @param row Baris dari koordinat yang diberikan.
      * @param col Kolom dari koordinat yang diberikan.
-     * @return Banyak markah lawan yang bertetanggaan dengan kotak pada koordinat yang diberikan.
+     * @return Nilai heuristik kualitas langkah ini. Nilai ini digunakan untuk pengurutan prioritas pemeriksaan langkah.
      */
     public int heuristic(int row, int col) {
-        int count = 0;
-        PlayerMarks toCount = this.currentPlayer == PlayerMarks.X ? PlayerMarks.O : PlayerMarks.X;
-
-        if (row > 0 && this.getAt(row - 1, col) == toCount) count++;
-        if (col > 0 && this.getAt(row, col - 1) == toCount) count++;
-        if (row < this.row - 1 && this.getAt(row + 1, col) == toCount) count++;
-        if (col < this.col - 1 && this.getAt(row, col + 1) == toCount) count++;
+        // Jumlahkan nilai heuristik untuk kotak ini dan kotak-kotak yang bertetanggaan
+        int count = heuristicPart(row, col);
+        if (row > 0) count += heuristicPart(row - 1, col);
+        if (col > 0) count += heuristicPart(row, col - 1);
+        if (row < this.row - 1) count += heuristicPart(row + 1, col);
+        if (col < this.col - 1) count += heuristicPart(row, col + 1);
 
         return count;
     }
@@ -188,6 +211,15 @@ public class Board {
         this.pliesLeft--;
     }
 
+    /**
+     * Mengembalikan nilai hash Zobrist dari papan ini.
+     *
+     * @return Nilai hash Zobrist yang dihitung dari papan ini.
+     */
+    public long zobristHash() {
+        return this.zobristHash;
+    }
+
     private void setMark(int row, int col, PlayerMarks mark) {
         this.setMark(row, col, mark, false);
     }
@@ -197,6 +229,7 @@ public class Board {
         if (skipEmpty && oldMark == PlayerMarks.EMPTY) return;
 
         this.state[row][col] = mark;
+        this.emptySquares.remove(Coordinate.of(row, col));
 
         switch (oldMark) {
             case X -> this.playerXScore--;
@@ -206,6 +239,38 @@ public class Board {
             case X -> this.playerXScore++;
             case O -> this.playerOScore++;
         }
+
+        // Flip the hash on this square
+        this.zobristHash ^= ZOBRIST_BOARD_BITSTRINGS[oldMark.ordinal()][row * 8 + col];
+        this.zobristHash ^= ZOBRIST_BOARD_BITSTRINGS[mark.ordinal()][row * 8 + col];
+    }
+
+    private int heuristicPart(int row, int col) {
+        int count = 0;
+        PlayerMarks toCount = this.currentPlayer == PlayerMarks.X ? PlayerMarks.O : PlayerMarks.X;
+
+        // Hitung banyak markah lawan yang bertetanggaan dengan kotak ini
+        if (row > 0 && this.getAt(row - 1, col) == toCount) count++;
+        if (col > 0 && this.getAt(row, col - 1) == toCount) count++;
+        if (row < this.row - 1 && this.getAt(row + 1, col) == toCount) count++;
+        if (col < this.col - 1 && this.getAt(row, col + 1) == toCount) count++;
+
+        // Periksa apakah ada markah sendiri yang bertetanggaan secara diagonal dan ada kotak kosong
+        // yang bertetanggaan dengan kedua kotak
+        if (row > 0 && col > 0 && this.getAt(row - 1, col - 1) == this.currentPlayer &&
+                (this.getAt(row - 1, col) == PlayerMarks.EMPTY || this.getAt(row, col - 1) == PlayerMarks.EMPTY)
+        ) count--;
+        if (row > 0 && col < this.col - 1 && this.getAt(row - 1, col + 1) == this.currentPlayer &&
+                (this.getAt(row - 1, col) == PlayerMarks.EMPTY || this.getAt(row, col + 1) == PlayerMarks.EMPTY)
+        ) count--;
+        if (row < this.row - 1 && col > 0 && this.getAt(row + 1, col - 1) == this.currentPlayer &&
+                (this.getAt(row + 1, col) == PlayerMarks.EMPTY || this.getAt(row, col - 1) == PlayerMarks.EMPTY)
+        ) count--;
+        if (row < this.row - 1 && col < this.col - 1 && this.getAt(row + 1, col + 1) == this.currentPlayer &&
+                (this.getAt(row + 1, col) == PlayerMarks.EMPTY || this.getAt(row, col + 1) == PlayerMarks.EMPTY)
+        ) count--;
+
+        return count;
     }
 
     private void switchTurn() {
@@ -214,5 +279,8 @@ public class Board {
             case O -> PlayerMarks.X;
             case EMPTY -> throw new RuntimeException();
         };
+
+        // Flip the player hash
+        this.zobristHash ^= ZOBRIST_PLAYER_X_BITSTRING;
     }
 }

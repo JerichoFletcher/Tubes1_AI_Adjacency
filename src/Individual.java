@@ -1,9 +1,9 @@
 public class Individual {
     public Byte[] actions;
-    public Tree<ReservationNode> leaf;
+    public Tree<ActionNode> leaf;
     public Integer fitnessValue;
 
-    public Individual(Byte[] actions, Tree<ReservationNode> leaf){
+    public Individual(Byte[] actions, Tree<ActionNode> leaf){
         this.actions = new Byte[actions.length];
         System.arraycopy(actions, 0, this.actions, 0, actions.length);
         this.leaf = leaf;
@@ -15,9 +15,9 @@ public class Individual {
     }
 
     public void calcFitnessValue(){
-        // Fitness value = banyaknya level dia bisa naik
+        // Fitness value merupakan banyaknya sebuah node dipilih untuk menjadi nilai parentnya
         this.fitnessValue = 0;
-        Tree<ReservationNode> currentTree = this.leaf;
+        Tree<ActionNode> currentTree = this.leaf;
         do {
             if (currentTree.getValue() == currentTree.getParent().getValue()){
                 this.fitnessValue++;
