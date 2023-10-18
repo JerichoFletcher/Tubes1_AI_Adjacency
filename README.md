@@ -31,11 +31,13 @@ Untuk memulai, silakan instal versi terbaru dari Java Development Kit (JDK) dan 
 ### Program Instructions
 1. Jalankan kelas Main untuk memulai program, dan jendela input akan muncul. Masukan nama pemain (X) dan pemain (O) pada text box yang tersedia, lalu pilih peran untuk setiap pemain X dan O melalui menu dropdown dibawahnya yang terdiri dari Human, Minimax bot, Local search bot, dan Genetic Algorithm bot.
 Lalu pilih jumlah ronde yang akan dimainkan (antara 2 sampai 28) melalui menu dropdown yang tersedia.
-Kamu bisa memilih bot untuk bermain lebih dulu.
+Kamu bisa memilih pemain mana yang akan bermain lebih dulu.
 <br><br><kbd>
 <img src="https://github.com/JerichoFletcher/Tubes1_AI_Adjacency/blob/main/Screenshot/inputScreen-1.png"></kbd>
 <br><br>
 <img src="https://github.com/JerichoFletcher/Tubes1_AI_Adjacency/blob/main/Screenshot/inputScreen-2.png"></kbd>
+<br><br>
+<img src="https://github.com/JerichoFletcher/Tubes1_AI_Adjacency/blob/main/Screenshot/inputScreen-3.png"></kbd>
 <br><br>
 2. Tekan tombol play, dan papan permainan serta papan score akan dimuat. Pemain pertama (Human atau bot) memulai permainan dengan memilih kotak yang kosong. Akibatnya, setiap marka pemain lawan yang berada disekitar kotak tersebut akan berubah menjadi marka miliknya.
 3. Lalu pemain lawan akan bermain dengan cara yang sama. Proses ini akan dihitung sebagai satu ronde (pemain X dan pemain O telah mengambil giliran).
