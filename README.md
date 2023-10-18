@@ -54,10 +54,10 @@ Kamu bisa memilih pemain mana yang akan bermain lebih dulu.
   <li>Modified by ITB Graphics and AI Lab Assistant 2020</li>
 </ul>
 
-### Kontibutor
-| NIM  | Nama |
-| ------------- | ------------- |
+### Kontributor
+| NIM      | Nama                      |
+|----------|---------------------------|
 | 13521059 | Arleen Chrysantha Gunardi |
-| 13521107 | Jericho Russel Sebastian |
-| 13521125 | Asyifa Nurul Shafira |
-| 13521133 | Cetta Reswara Parahita |
+| 13521107 | Jericho Russel Sebastian  |
+| 13521125 | Asyifa Nurul Shafira      |
+| 13521133 | Cetta Reswara Parahita    |
