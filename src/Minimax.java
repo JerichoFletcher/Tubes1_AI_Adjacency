@@ -10,7 +10,7 @@ public class Minimax {
             pruneCount = 0,
             lastBestMoveCacheHitCount = 0,
             transpositionMapHitCount = 0;
-    private static final Map<Long, SearchResult>
+    private static final Map<Long, ActionNode>
             lastBestMoveCache = new HashMap<>(),
             transpositionMap = new HashMap<>();
 
@@ -23,22 +23,22 @@ public class Minimax {
         // from each iteration.
         if (DEBUG >= 1) System.out.printf("Starting search up to depth %s\n", maxDepth);
         int initialDepth = Math.min(maxDepth, 2);
-        SearchResult result = findOne(board, interrupt, initialDepth);
+        ActionNode result = findOne(board, interrupt, initialDepth);
         for (int depth = initialDepth + 2; depth < maxDepth; depth += 2) {
             if (interrupt.getAsBoolean()) break;
-            SearchResult currentResult = findOne(board, interrupt, depth);
-            result = !interrupt.getAsBoolean() || currentResult.evaluation > result.evaluation ? currentResult : result;
+            ActionNode currentResult = findOne(board, interrupt, depth);
+            result = !interrupt.getAsBoolean() || currentResult.evaluationScore > result.evaluationScore ? currentResult : result;
         }
         if (!interrupt.getAsBoolean() && initialDepth != maxDepth) {
-            SearchResult currentResult = findOne(board, interrupt, maxDepth);
-            result = !interrupt.getAsBoolean() || currentResult.evaluation > result.evaluation ? currentResult : result;
+            ActionNode currentResult = findOne(board, interrupt, maxDepth);
+            result = !interrupt.getAsBoolean() || currentResult.evaluationScore > result.evaluationScore ? currentResult : result;
         }
 
-        if (DEBUG >= 1) System.out.printf("└-- Stopped search; found best move is %s with score %s\n", Coordinate.toString(result.move), result.evaluation);
-        return result.move;
+        if (DEBUG >= 1) System.out.printf("└-- Stopped search; found best move is %s with score %s\n", Coordinate.toString(result.action), result.evaluationScore);
+        return result.action;
     }
 
-    private static SearchResult findOne(Board board, BooleanSupplier interrupt, int depth) {
+    private static ActionNode findOne(Board board, BooleanSupplier interrupt, int depth) {
         if (DEBUG >= 1) System.out.printf("├-- Starting search with depth %s\n", depth);
 
         // Clean transposition cache and statistic counters
@@ -58,7 +58,7 @@ public class Minimax {
 
         // Check for the best move from the last iteration first
         if (lastBestMoveCache.containsKey(board.zobristHash())) {
-            byte move = lastBestMoveCache.get(board.zobristHash()).move;
+            byte move = lastBestMoveCache.get(board.zobristHash()).action;
             if (moves.contains(move)) {
                 lastBestMoveCacheHitCount++;
                 moves.remove(moves.indexOf(move));
@@ -89,7 +89,7 @@ public class Minimax {
 
         // Store the current best move for the next search deepening
         byte selectedMove = maxResult.get((int) (Math.random() * maxResult.size()));
-        SearchResult result = new SearchResult(selectedMove, a);
+        ActionNode result = new ActionNode(a, selectedMove);
         lastBestMoveCache.put(board.zobristHash(), result);
 
         if (DEBUG >= 1) System.out.printf("""
@@ -120,7 +120,7 @@ public class Minimax {
         // If this position has been evaluated, return the value from the transposition map
         if (transpositionMap.containsKey(board.zobristHash())) {
             transpositionMapHitCount++;
-            return transpositionMap.get(board.zobristHash()).evaluation;
+            return transpositionMap.get(board.zobristHash()).evaluationScore;
         }
 
         // Generate all predecessors of the current board state
@@ -133,7 +133,7 @@ public class Minimax {
 
         // Check for the best move from the last iteration first
         if (lastBestMoveCache.containsKey(board.zobristHash())) {
-            byte move = lastBestMoveCache.get(board.zobristHash()).move;
+            byte move = lastBestMoveCache.get(board.zobristHash()).action;
             if (moves.contains(move)) {
                 lastBestMoveCacheHitCount++;
                 moves.remove(moves.indexOf(move));
@@ -156,7 +156,7 @@ public class Minimax {
         }
 
         // Cache the search result
-        SearchResult result = new SearchResult(bestMove, score);
+        ActionNode result = new ActionNode(score, bestMove);
         lastBestMoveCache.put(board.zobristHash(), result);
         transpositionMap.put(board.zobristHash(), result);
         return score;
@@ -176,7 +176,7 @@ public class Minimax {
         // If this position has been evaluated, return the value from the transposition map
         if (transpositionMap.containsKey(board.zobristHash())) {
             transpositionMapHitCount++;
-            return transpositionMap.get(board.zobristHash()).evaluation;
+            return transpositionMap.get(board.zobristHash()).evaluationScore;
         }
 
         // Generate all predecessors of the current board state
@@ -189,7 +189,7 @@ public class Minimax {
 
         // Check for the best move from the last iteration first
         if (lastBestMoveCache.containsKey(board.zobristHash())) {
-            byte move = lastBestMoveCache.get(board.zobristHash()).move;
+            byte move = lastBestMoveCache.get(board.zobristHash()).action;
             if (moves.contains(move)) {
                 lastBestMoveCacheHitCount++;
                 moves.remove(moves.indexOf(move));
@@ -212,7 +212,7 @@ public class Minimax {
         }
 
         // Cache the search result
-        SearchResult result = new SearchResult(bestMove, score);
+        ActionNode result = new ActionNode(score, bestMove);
         lastBestMoveCache.put(board.zobristHash(), result);
         transpositionMap.put(board.zobristHash(), result);
         return score;
@@ -277,15 +277,5 @@ public class Minimax {
         }
 
         return moveBoards;
-    }
-
-    private static class SearchResult {
-        public byte move;
-        public int evaluation;
-
-        public SearchResult(byte move, int evaluation) {
-            this.move = move;
-            this.evaluation = evaluation;
-        }
     }
 }
