@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.util.*;
 
 public class BotLocal extends BotBase{
-    private static final int k = 30;
+    private static final int k = 500;
 
     /**
      * Mencari aksi paling optimal yang akan dilakukah bot dengan menerapkan Local Beam Search.
@@ -29,6 +29,10 @@ public class BotLocal extends BotBase{
         Tree<ActionNode> currentTree;
 
         for (int i=0; i<board.getPliesLeft(); i++){
+            if (isStopped()){
+                System.out.println("break");
+                break;
+            }
             // Membangkitkan semua pohon evaluasi yang akan dievaluasi
             for (Tree<ActionNode> evaluationTree : currentEvaluate){
                 // Menyimpan semua kotak yang tersedia untuk aksi papan evaluasi terkini
