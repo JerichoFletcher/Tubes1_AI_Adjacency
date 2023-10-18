@@ -9,12 +9,9 @@ import java.util.stream.Stream;
 public class BotProvider {
     private static final List<String> keys = new ArrayList<>();
     private static final Map<String, Class<? extends BotBase>> bots = Stream.of(new Object[][]{
-            /* TODO:
-                Remove test bots from final build
-             */
             {"Human", null},
-            {"Random (test)", BotRandom.class},
-            {"Greedy (test)", BotGreedy.class},
+//            {"Random (test)", BotRandom.class},
+//            {"Greedy (test)", BotGreedy.class},
             {"Minimax Bot", BotMinimax.class},
             {"Local Search Bot", BotLocal.class},
             {"Genetic Algorithm Bot", BotGeneticAlgorithm.class}
