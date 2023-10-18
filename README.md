@@ -5,8 +5,7 @@
 _Waduh☝😅_
 
 <kbd>
-  <img src="https://github.com/ahnjedid/Adjacency-Strategy-Game/blob/master/screenshots/gamePlay.png">
-  !!!GANTI y
+  <img src="https://github.com/JerichoFletcher/Tubes1_AI_Adjacency/blob/main/Screenshot/gamePlay.png">
 </kbd>
 
 <hr>
@@ -23,7 +22,7 @@ Untuk memulai, silakan instal versi terbaru dari Java Development Kit (JDK) dan 
 
 ### Deployment (IntelliJ)
 
-1. Clone repositori ini menggunakan Git dengan menjalankan perintah berikut: `git clone https://github.com/GAIB20/adversarial-adjacency-strategy-game.git`, atau Anda dapat juga mengunduh repositorinya secara langsung.
+1. Clone repositori ini menggunakan Git dengan menjalankan perintah berikut: `git clone https://github.com/JerichoFletcher/Tubes1_AI_Adjacency.git`, atau Anda dapat juga mengunduh repositorinya secara langsung.
 2. Buka folder repositori ini melalui IntelliJ.
 3. Siapkan JDK dengan pergi ke tab **File -> Struktur Proyek -> Tab Proyek**. Di dalam Tab Proyek, pada Project SDK, klik "New," lalu cari lokasi folder JDK yang Anda miliki.
 4. CATATAN: Mulai dari JDK 11, JavaFX telah dihapus dan menjadi modul mandiri. Berkas-berkas JavaFX yang diperlukan untuk menjalankan program "Adjacency" terletak dalam folder repositori itu sendiri. Untuk mengaturnya, pergi ke File -> Struktur Proyek -> Tab Libraries. Pada Tab Libraries, tekan tombol +, cari folder "javafx-sdk/lib" di dalam repositori, dan tambahkan ke daftar perpustakaan.
@@ -34,17 +33,19 @@ Untuk memulai, silakan instal versi terbaru dari Java Development Kit (JDK) dan 
 <hr>
 
 ### Program Instructions
-1. Run the Main class to load the program, and the input window below will pop up. Input the names of Player (X) and Bot (O) into their respective text fields.
-Then, select the number of rounds (a number between 2 and 28) to play using the dropdown menu.
-You can make the Bot start first.
+1. Jalankan kelas Main untuk memulai program, dan jendela input akan muncul. Masukan nama pemain (X) dan pemain (O) pada text box yang tersedia, lalu pilih peran untuk setiap pemain X dan O melalui menu dropdown dibawahnya yang terdiri dari Human, Minimax bot, Local search bot, dan Genetic Algorithm bot.
+Lalu pilih jumlah ronde yang akan dimainkan (antara 2 sampai 28) melalui menu dropdown yang tersedia.
+Kamu bisa memilih bot untuk bermain lebih dulu.
 <br><br><kbd>
-<img src="https://github.com/ahnjedid/Adjacency-Strategy-Game/blob/master/screenshots/inputScreen.png"></kbd>
+<img src="https://github.com/JerichoFletcher/Tubes1_AI_Adjacency/blob/main/Screenshot/inputScreen-1.png"></kbd>
 <br><br>
-2. Click Play, and the gameboard and scoreboard window will load. Player (X) starts the game by clicking on an empty button. Any adjacent O’s will change to X's as a result. 
-3. Then, Bot (O) has their turn by also clicking on an empty button. Any adjacent X’s will change to O's as a result. NOTE: This process is counted as 1 round (Player and Bot both taking their turns).
-4. The game will continue until there are no more rounds left to play. In the end, the player with the greater number of letters is the winner of the game.
+<img src="https://github.com/JerichoFletcher/Tubes1_AI_Adjacency/blob/main/Screenshot/inputScreen-2.png"></kbd>
+<br><br>
+2. Tekan tombol play, dan papan permainan serta papan score akan dimuat. Pemain pertama (Human atau bot) memulai permainan dengan memilih kotak yang kosong. Akibatnya, setiap marka pemain lawan yang berada disekitar kotak tersebut akan berubah menjadi marka miliknya.
+3. Lalu pemain lawan akan bermain dengan cara yang sama. Proses ini akan dihitung sebagai satu ronde (pemain X dan pemain O telah mengambil giliran).
+4. Permainan akan terus berlanjut sampai tidak ada lagi ronde yang tersisa. Diakhir permainan, pemain dengan score tertinggi akan menjadi pemenangnya.
 <kbd>
-  <img src="https://github.com/ahnjedid/Adjacency-Strategy-Game/blob/master/screenshots/endOfGame.png">
+  <img src="https://github.com/JerichoFletcher/Tubes1_AI_Adjacency/blob/main/Screenshot/minimax-human.png">
 </kbd>
 
 <hr>
