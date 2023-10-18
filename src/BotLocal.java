@@ -3,35 +3,45 @@ import java.util.*;
 
 public class BotLocal extends BotBase{
     private static final int k = 500;
+
+    /**
+     * Mencari aksi paling optimal yang akan dilakukah bot dengan menerapkan Local Beam Search.
+     * @param board Kondisi papan permainan terkini.
+     * @return choosenChild Individu anak yang telah dipilih sebagai pemilik aksi paling optimal berdasarkan Local Beam Search.
+     */
     @Override
     protected byte searchMove(Board board) {
-        // local beam search
 
-        // initiate
+        /* Initiate */
+        // Membangkitkan local tree
         Tree<ActionNode> localTree = new Tree<>(new ActionNode(null, board));
+        // Membangkitkan array penyimpanan pohon evaluasi terkini
         List<Tree<ActionNode>> currentEvaluate = new ArrayList<>();
+        // Membangkitkan array penyimpanan pohon evaluasi selanjutnya
         List<Tree<ActionNode>> nextEvaluate = new ArrayList<>();
+        // Membangkitkan array penyimpanan aksi
         List<Byte> actions = new ArrayList<>();
+        // Membangkitkan map list papan aksi
         Map<Byte, Board> boards = new HashMap<>();
 
-        // assign initiate vars
+        // Assigning variabel terkait yang telah dibangkitkan
         currentEvaluate.add(localTree);
         Tree<ActionNode> currentTree;
 
         for (int i=0; i<board.getPliesLeft(); i++){
-//            System.out.printf("Ply %d\n", i);
-            // if has reached the leaf, break
-//            if (currentEvaluate.get(0).getValue().board.isTerminal()){
-//                break;
-//            }
             if (isStopped()){
                 System.out.println("break");
                 break;
             }
+            // Membangkitkan semua pohon evaluasi yang akan dievaluasi
             for (Tree<ActionNode> evaluationTree : currentEvaluate){
+                // Menyimpan semua kotak yang tersedia untuk aksi papan evaluasi terkini
                 actions = evaluationTree.getValue().board.getEmptySquares();
+                // Menghasilkan semua kemungkinan papan berikutnya
                 boards = Minimax.generateNextBoardStates(evaluationTree.getValue().board);
+                // Memasukkan nilai pohon evaluasi saat ini
                 currentTree = evaluationTree;
+                // Menambahkan pohon yang dibuat ke list currentTree dan nextEvaluate
                 for (Byte action : actions) {
                     Tree<ActionNode> child = new Tree<>(new ActionNode(action, boards.get(action)));
                     currentTree.addChild(child);
@@ -39,16 +49,15 @@ public class BotLocal extends BotBase{
                 }
             }
 
+            // Mengevaluasi localTree menggunakan algoritma minimax
             Minimax.evaluateTree(localTree, board);
+
+            // Mengurutkan semua nilai nextEvaluate menurut nilai evaluasinya untuk mencari local optimum
             nextEvaluate.sort(Comparator.comparingInt(tree -> -tree.getValue().evaluationScore));
-//            nextEvaluate.sort(Comparator.comparingInt(tree -> -tree.getParent().getValue().board.heuristic(tree.getValue().action))); // sort by heuristic
-//            System.out.println("(action, parent)");
-//            nextEvaluate.forEach(t -> System.out.printf("(%d, %d)", t.getValue().action, t.getParent().getValue().action));
+            // Memilih child yang merupakan local optimum
             if (k<nextEvaluate.size()) {
                 for (int j = k; j < nextEvaluate.size(); j++) {
                     Tree<ActionNode> removedChild = nextEvaluate.get(j);
-//                    System.out.printf("Removed child: (%d, parent %d)\n", removedChild.getValue().action, removedChild.getParent().getValue().action);
-
                     Tree<ActionNode> parent = removedChild.getParent();
                     if (parent != null) {
                         parent.removeChild(removedChild);
@@ -58,22 +67,11 @@ public class BotLocal extends BotBase{
                             parent = grandparent;
                         }
                     }
-
-//                    if (i>0){
-//                        currentTree = currentTree.getParent();
-////                        printTree(currentTree,2);
-//                        currentTree = currentTree.getChild(child -> Objects.equals(child, removedChild.getParent()));
-//                    }
-//                    currentTree.removeChild(removedChild); // remove all child from k to last
                 }
-                nextEvaluate.subList(k, nextEvaluate.size()).clear(); // remove all child tree from k to last (keep only k child trees)
-
+                nextEvaluate.subList(k, nextEvaluate.size()).clear();
             }
 
-//            System.out.println("Local Tree");
-//            printTree(localTree, 2);
-
-            // next
+            // Menyimpan konfigurasi terkini
             currentEvaluate.clear();
             currentEvaluate.addAll(nextEvaluate);
             nextEvaluate.clear();
@@ -81,37 +79,13 @@ public class BotLocal extends BotBase{
             boards.clear();
         }
 
-        // clean up tree from nodes with no children
-//        printTree(localTree, 1);
-//        treeCleanUp(board, localTree);
-
-        // evaluate localTree with minimax
+        // Menilai evaluation score localTree dengan fungsi minimax
         Minimax.evaluateTree(localTree, board);
-//        System.out.println("FINAL TREE");
-//        printTree(localTree, 2);
 
+        // Mengembalikan child dengan nilai paling optimal berdasarkan local beam search
         return localTree.getChild(
                 child -> Objects.equals(child.getValue().evaluationScore, localTree.getValue().evaluationScore)
         ).getValue().action;
     }
 
-//    private void treeCleanUp(Board board, Tree<ActionNode> localTree){
-//        for (Tree<ActionNode> child : localTree.getChildren()) {
-//            if (child.getChildren() != null){
-//                // if hasn't reached the leaf
-//                if (child.getValue().board.isTerminal()){
-//                    // if node has no children, remove the node
-//                    child.getParent().removeChild(child);
-//                } else {
-//                    treeCleanUp(board, child);
-//                }
-//            }
-//        }
-//    }
-    private void printTree(Tree<ActionNode> tree, int indent) {
-        for (int i = 0; i < indent; i++) System.out.print("  ");
-        if (tree.getValue().action == null) System.out.printf("null: %s\n", tree.getValue().evaluationScore);
-        else System.out.printf("(%s, %s): %s\n", Coordinate.getX(tree.getValue().action), Coordinate.getY(tree.getValue().action), tree.getValue().evaluationScore);
-        for (Tree<ActionNode> child : tree.getChildren()) printTree(child, indent + 1);
-    }
 }

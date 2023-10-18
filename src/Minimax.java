@@ -14,30 +14,45 @@ public class Minimax {
             lastBestMoveCache = new HashMap<>(),
             transpositionMap = new HashMap<>();
 
+    /**
+     * Melakukan pencarian IDS untuk mencari langkah terbaik dalam beberapa iterasi dengan kedalaman yang berbeda,
+     * Mengembalikan langkah terbaik yang ditemukan apabila ditemukan langkah paling minimum atau ketika waktu yang disediakan telah habis.
+     * @param board Kondisi terkini papan permainan.
+     * @param interrupt Timer untuk penghitungan waktu pencarian solusi.
+     * @param maxDepth Kedalaman pohon yang dihitung dari pilihan banyaknya ronde permainan.
+     * @return {@code true} jika pencarian bot sudah dihentikan.
+     */
     public static byte startSearch(Board board, BooleanSupplier interrupt, int maxDepth) {
         lastBestMoveCache.clear();
         transpositionMap.clear();
 
-        // Do an iterative deepening search: start from depth 2 and work our way down 2 plies each time
-        // until the maximum desired depth is reached or the search is interrupted. Store the best move
-        // from each iteration.
         if (DEBUG >= 1) System.out.printf("Starting search up to depth %s\n", maxDepth);
         int initialDepth = Math.min(maxDepth, 2);
         SearchResult result = findOne(board, interrupt, initialDepth);
+
         for (int depth = initialDepth + 2; depth < maxDepth; depth += 2) {
             if (interrupt.getAsBoolean()) break;
             SearchResult currentResult = findOne(board, interrupt, depth);
             result = !interrupt.getAsBoolean() || currentResult.evaluation > result.evaluation ? currentResult : result;
         }
+
         if (!interrupt.getAsBoolean() && initialDepth != maxDepth) {
             SearchResult currentResult = findOne(board, interrupt, maxDepth);
             result = !interrupt.getAsBoolean() || currentResult.evaluation > result.evaluation ? currentResult : result;
         }
 
         if (DEBUG >= 1) System.out.printf("└-- Stopped search; found best move is %s with score %s\n", Coordinate.toString(result.move), result.evaluation);
+
         return result.move;
     }
 
+    /**
+     * Menyimpan hasil pencarian, termasuk langkah terbaik dan skor evaluasi yang terkait pada kedalaman tertentu.
+     * @param board Kondisi terkini papan permainan.
+     * @param interrupt Timer untuk penghitungan waktu pencarian solusi.
+     * @param depth Kedalaman pohon yang dihitung dari pilihan banyaknya ronde permainan.
+     * @return result hasil pencarian dengan kedalaman tertentu.
+     */
     private static SearchResult findOne(Board board, BooleanSupplier interrupt, int depth) {
         if (DEBUG >= 1) System.out.printf("├-- Starting search with depth %s\n", depth);
 
@@ -106,6 +121,17 @@ public class Minimax {
         return result;
     }
 
+    /**
+     * Mencari pilihan minimal dalam permainan dalam sudut pandang pemain lawan
+     * @param board Kondisi terkini papan permainan.
+     * @param interrupt Timer untuk penghitungan waktu pencarian solusi.
+     * @param a Nilai alfa dari pohon permainan.
+     * @param b Nilai beta dari pohon permainan.
+     * @param searchingPlayer Player yang sedang melakukan pencarian.
+     * @param depth Kedalaman pohon yang dihitung dari pilihan banyaknya ronde permainan.
+     * @return result hasil pencarian dengan kedalaman tertentu.
+     */
+
     private static int minValue(Board board, BooleanSupplier interrupt, int a, int b, PlayerMarks searchingPlayer, int depth) {
         // End search if the maximum depth is reached or this board state is a terminal state
         if (interrupt.getAsBoolean() || depth == 0 || board.isTerminal()) {
@@ -159,9 +185,20 @@ public class Minimax {
         SearchResult result = new SearchResult(bestMove, score);
         lastBestMoveCache.put(board.zobristHash(), result);
         transpositionMap.put(board.zobristHash(), result);
+
         return score;
     }
 
+    /**
+     * Mencari pilihan maksimal dalam permainan dalam sudut pandang pemain bertahan
+     * @param board Kondisi terkini papan permainan.
+     * @param interrupt Timer untuk penghitungan waktu pencarian solusi.
+     * @param a Nilai alfa dari pohon permainan.
+     * @param b Nilai beta dari pohon permainan.
+     * @param searchingPlayer Player yang sedang melakukan pencarian.
+     * @param depth Kedalaman pohon yang dihitung dari pilihan banyaknya ronde permainan.
+     * @return result hasil pencarian dengan kedalaman tertentu.
+     */
     private static int maxValue(Board board, BooleanSupplier interrupt, int a, int b, PlayerMarks searchingPlayer, int depth) {
         // End search if the maximum depth is reached or this board state is a terminal state
         if (interrupt.getAsBoolean() || depth == 0 || board.isTerminal()) {
@@ -218,10 +255,24 @@ public class Minimax {
         return score;
     }
 
+    /**
+     * Menghitung evaluation score dari pohon yang sedang berjalan
+     * @param board Kondisi terkini papan permainan.
+     * @param tree Pohon action node yang belum dilakukan pencarian nilai terhadapnya.
+     * @return Pohon yang telah dievaluasi nilainya.
+     */
     public static void evaluateTree(Tree<ActionNode> tree, Board board) {
         evaluateTree(tree, board, board.getCurrentPlayer(), true);
     }
 
+    /**
+     * Mencari pilihan minimal dalam permainan dalam sudut pandang pemain lawan
+     * @param board Kondisi terkini papan permainan.
+     * @param isMax Status apakah evaluasi dilakukan untuk pencarian nilai maksimal atau minimal.
+     * @param searchingPlayer Player yang sedang melakukan pencarian.
+     * @param tree Pohon action node yang belum dilakukan pencarian nilai terhadapnya.
+     * @return Pohon yang telah dievaluasi nilainya.
+     */
     private static void evaluateTree(Tree<ActionNode> tree, Board board, PlayerMarks searchingPlayer, boolean isMax) {
         if (tree.getChildren().size() == 0) {
             // This node is terminal: calculate value directly
@@ -265,6 +316,11 @@ public class Minimax {
         }
     }
 
+    /**
+     * Menghasilkan semua papan yang mungkin setelah tindakan pertama yang diberikan pada papan saat ini.
+     * @param board Kondisi terkini papan permainan.
+     * @return moveBoard Map list semua papan yang mungkin dilakukan pada aksi selanjutnya.
+     */
     public static Map<Byte, Board> generateNextBoardStates(Board board) {
         List<Byte> moves = board.getEmptySquares();
         Map<Byte, Board> moveBoards = new HashMap<>();
@@ -279,6 +335,9 @@ public class Minimax {
         return moveBoards;
     }
 
+    /**
+     * Kelas untuk enyimpan hasil pencarian, termasuk langkah terbaik dan skor evaluasi yang terkait.
+     */
     private static class SearchResult {
         public byte move;
         public int evaluation;
