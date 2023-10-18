@@ -22,8 +22,8 @@ Untuk memulai, silakan instal versi terbaru dari Java Development Kit (JDK) dan 
 2. Buka folder repositori ini melalui IntelliJ.
 3. Siapkan JDK dengan pergi ke tab **File -> Struktur Proyek -> Tab Proyek**. Di dalam Tab Proyek, pada Project SDK, klik "New," lalu cari lokasi folder JDK yang Anda miliki.
 4. Pergi ke File -> Struktur Proyek -> Tab Libraries. Pada Tab Libraries, tekan tombol +, navigasi ke folder "lib" di dalam folder JavaFX, dan tambahkan ke daftar perpustakaan.
-5. PENTING: Buka Run -> Edit Configurations, dan pergi ke bagian VM options. Di sini, tambahkan jalur lengkap ke folder "lib" dalam direktori javafx-sdk di komputer Anda, lalu tambahkan baris berikut: `--add-modules=javafx.controls,javafx.fxml`. <br><br>
-   Contohnya, saya menambahkan baris berikut ke opsi VM saya: `--module-path "C:\Jed's Work\CS Side Projects\Adjacency-Strategy-Game\javafx-sdk\lib" --add-modules=javafx.controls,javafx.fxml`
+5. PENTING: Buka Run -> Edit Configurations, dan pergi ke bagian VM options. Di sini, tambahkan jalur lengkap ke folder "lib" dalam direktori JavaFX di komputer Anda, lalu tambahkan baris berikut: `--add-modules=javafx.controls,javafx.fxml`. <br><br>
+   Sebagai contoh: `--module-path "C:\Program Files\Eclipse Adoptium\javafx-sdk-20.0.2\lib" --add-modules=javafx.controls,javafx.fxml`
 6. Buka kelas Main dalam antarmuka file IntelliJ.
 
 <hr>
