@@ -16,7 +16,7 @@ public class BotLocal extends BotBase{
 
         // assign initiate vars
         currentEvaluate.add(localTree);
-        Tree<ActionNode> currentTree = localTree;
+        Tree<ActionNode> currentTree;
 
         for (int i=0; i<board.getPliesLeft(); i++){
 //            System.out.printf("Ply %d\n", i);
@@ -35,7 +35,9 @@ public class BotLocal extends BotBase{
                 }
             }
 
-            nextEvaluate.sort(Comparator.comparingInt(tree -> -tree.getParent().getValue().board.heuristic(tree.getValue().action))); // sort by heuristic
+            Minimax.evaluateTree(localTree, board);
+            nextEvaluate.sort(Comparator.comparingInt(tree -> -tree.getValue().evaluationScore));
+//            nextEvaluate.sort(Comparator.comparingInt(tree -> -tree.getParent().getValue().board.heuristic(tree.getValue().action))); // sort by heuristic
 //            System.out.println("(action, parent)");
 //            nextEvaluate.forEach(t -> System.out.printf("(%d, %d)", t.getValue().action, t.getParent().getValue().action));
             if (k<nextEvaluate.size()) {
