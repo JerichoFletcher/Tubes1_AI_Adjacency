@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.util.*;
 
 public class BotLocal extends BotBase{
-    private static final int k = 30;
+    private static final int k = 500;
     @Override
     protected byte searchMove(Board board) {
         // local beam search
@@ -24,6 +24,10 @@ public class BotLocal extends BotBase{
 //            if (currentEvaluate.get(0).getValue().board.isTerminal()){
 //                break;
 //            }
+            if (isStopped()){
+                System.out.println("break");
+                break;
+            }
             for (Tree<ActionNode> evaluationTree : currentEvaluate){
                 actions = evaluationTree.getValue().board.getEmptySquares();
                 boards = Minimax.generateNextBoardStates(evaluationTree.getValue().board);
@@ -83,8 +87,8 @@ public class BotLocal extends BotBase{
 
         // evaluate localTree with minimax
         Minimax.evaluateTree(localTree, board);
-        System.out.println("FINAL TREE");
-        printTree(localTree, 2);
+//        System.out.println("FINAL TREE");
+//        printTree(localTree, 2);
 
         return localTree.getChild(
                 child -> Objects.equals(child.getValue().evaluationScore, localTree.getValue().evaluationScore)
