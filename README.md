@@ -1,8 +1,4 @@
-# WaduhAI
-
-[![Waduh☝😅](https://img.youtube.com/vi/q7VoelZ3Svo/mqdefault.jpg)](https://www.youtube.com/shorts/q7VoelZ3Svo)
-
-_Waduh☝😅_
+# Adjacency Strategy Game
 
 <kbd>
   <img src="https://github.com/JerichoFletcher/Tubes1_AI_Adjacency/blob/main/Screenshot/gamePlay.png">
