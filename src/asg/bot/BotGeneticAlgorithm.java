@@ -25,10 +25,12 @@ public class BotGeneticAlgorithm extends BotBase {
         // Membuat k individu, tiap individu memiliki kedalaman sebanyak pilihan jumlah ronde/ play.
         for (int i = 0; i < k; i++) {
             List<Byte> emptySquares = board.getEmptySquares();
-            Individual individual = new Individual(new Byte[board.getPliesLeft()], new Tree<>(new ActionNode()));
+
+            int depth = Math.min(board.getPliesLeft(), 8);
+            Individual individual = new Individual(new Byte[depth], new Tree<>(new ActionNode()));
 
             // Mengacak kotak yang masih tersedia di papan untuk diisikan pada tiap kedalaman individu yang sedang dibangkitkan.
-            for (int j = 0; j < board.getPliesLeft(); j++) {
+            for (int j = 0; j < depth; j++) {
                 int emptySquareIdx = (int) (Math.random() * emptySquares.size());
                 individual.setAction(j, emptySquares.get(emptySquareIdx));
                 emptySquares.remove(emptySquareIdx);
